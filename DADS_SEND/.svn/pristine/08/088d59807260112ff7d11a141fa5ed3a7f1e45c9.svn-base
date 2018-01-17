@@ -1,0 +1,86 @@
+package com.cmcc.monitor.task;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.log4j.Logger;
+
+import com.cmcc.monitor.Util.PropertiesReader;
+
+/**
+ * 
+ * 监控网关程序的定时任务：
+ * 		每隔 FixedRate 时间去查询一下服务进程里是否有网关程序，如果没有则启动指定路径下的网关程序
+ * EXEName：可执行程序名称，执行后改名字会出现在进程列表里
+ * EXEPath：可执行程序所在目录
+ * FixedRate：查询时间间隔，单位：分钟
+ */
+public class GWMonitor {
+	private static Logger log = Logger.getLogger(GWMonitor.class);
+	public static String EXEPath = null;
+	public static String EXEName = null;
+	public static Integer FixedRate = null;
+	static{
+		EXEName = PropertiesReader.getProp("EXEName");
+		EXEPath = "cmd /c start "+PropertiesReader.getProp("EXEPath")+EXEName;
+		FixedRate = Integer.parseInt(PropertiesReader.getProp("FixedRate"));
+		log.info("EXEName = "+EXEName);
+		log.info("EXEPath = "+EXEPath);
+		log.info("FixedRate = "+FixedRate);
+	}
+	public ScheduledExecutorService scheduExec = Executors.newSingleThreadScheduledExecutor();
+
+	public static void main(String[] args) {
+		GWMonitor tm = new GWMonitor();
+		tm.process();
+	}
+	// 添加新任务
+	public void process() {
+		Runnable task = new Runnable() {
+			public void run() {
+				monitor(EXEName,EXEPath);
+			}
+		};
+		scheduExec.scheduleWithFixedDelay(task, 0, FixedRate,TimeUnit.MINUTES);
+	}
+	public static void monitor(String EXEName,String EXEPath){
+//		String query_cmd = "wmic /node:10.2.57.5 /user:Administrator /password:4esz process"; //查询当前运行的进程信息
+		String query_cmd = "wmic process get name"; //查询当前运行的进程信息
+		String res = "";
+		BufferedReader bReader = null;
+		Process process = null ;
+		try {
+			process = Runtime.getRuntime().exec(query_cmd);
+			process.getOutputStream().close();
+			bReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = null;
+			while((line = bReader.readLine())!=null)
+			{ 
+				res+=line;
+			} 
+		}catch (IOException e) {
+			e.printStackTrace();
+			log.info(e.getMessage());
+		}finally{
+			if(process!=null)
+				process.destroy();
+		}
+		log.debug(res);
+		//如果当前进程列表中不包含
+		if(res.indexOf(EXEName)==-1)
+		{
+			try {
+				Runtime.getRuntime().exec(EXEPath);
+				log.info("启动服务:"+EXEName);
+			} catch (IOException e) {
+				e.printStackTrace();
+				log.error("启动服务失败："+e.getMessage());
+			}
+		}else{
+			log.info("服务正常运行");
+		}
+	}
+}

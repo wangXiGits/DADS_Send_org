@@ -1,0 +1,22 @@
+package com.cmcc.monitor.test;
+
+import org.junit.Test;
+
+import com.cmcc.monitor.Util.DateUtil;
+
+public class NewSportsTest {
+	String date = DateUtil.getToday();
+	@Test
+	public void send(){
+		SimulateDataTest sender = new SimulateDataTest();
+		sendSports(sender, date);
+	}
+	private void sendSports(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		sender.setMeasureTime(measureTime);
+		
+		sender.stepCountdata();
+		sender.stepDetaildata();
+		sender.stepEffectivedata();
+	}
+}

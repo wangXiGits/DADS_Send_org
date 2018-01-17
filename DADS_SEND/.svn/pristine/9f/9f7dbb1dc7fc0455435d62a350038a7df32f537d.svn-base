@@ -1,0 +1,45 @@
+package com.cmcc.gateway.restful.Contorller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.api.Controller.BaseController;
+/**
+ * restful接口，上下文后面需要统一加上一层路径：/service
+ * @author lwh
+ */
+@Controller
+public class HeartfunctionDataController extends BaseController{
+	private static Logger log = Logger.getLogger(HeartfunctionDataController.class);
+	/**
+	 * 心功能数据上传接口
+	 * @param apptype 应用类型
+	 * @param datatype 数据类型
+	 * @param deviceid 设备编号
+	 * @param collectdate 上传时间
+	 * @param datavalue 数据内容
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping(method=RequestMethod.POST, value="/uploadHeartFunctionDatas",params={"datas"})
+	public void uploadHeartFunctionDatas(HttpServletRequest request,HttpServletResponse response){
+		long beginTime = System.currentTimeMillis();
+		String tablename="heartfunction";
+		log.debug("请求开始时间："+beginTime);
+		log.info("the begin of uploadHeartFunctionDatas...");
+		
+		//调用通用处理方法
+		String result = CommonHandlerUtil.CommonHandlerMethod(request, tablename , Constants.DATATYPE_HEARTFUNCTION);
+		
+        log.info("the end of uploadHeartFunctionDatas.");
+        log.debug("请求结束，共耗时："+(System.currentTimeMillis()-beginTime)+" ms");
+		this.writeToClient(response, result);
+	}
+}

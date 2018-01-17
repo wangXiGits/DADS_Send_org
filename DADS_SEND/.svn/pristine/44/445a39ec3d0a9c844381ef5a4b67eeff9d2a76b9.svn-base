@@ -1,0 +1,19 @@
+package com.cmcc.monitor.Dao;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.User;
+
+public interface UserDao {
+	public void insert(User entity);
+
+	public void update(User entity);
+
+	public void delete(int id);
+	
+	public User findById(int id);
+	
+	public List<User> findScrollPage(final int page,final int pagesize,final String condition);
+	
+	public int getCount();
+}

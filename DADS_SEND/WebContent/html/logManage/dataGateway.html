@@ -1,0 +1,23 @@
+<div header></div>
+<table>
+    <tr>
+        <td style="width: 150px">
+            <div menu ng-controller="MenuCtrl" ng-init="init(0, 1)"></div>
+        </td>
+        <td>
+            <div style="position: relative;width: 782px;margin-left: 14px">
+                <div spin style="position: absolute;top: 275px;left: 285px;width: 150px;height: 150px" ng-show="loading"></div>
+                <form class="form-horizontal" style="margin: 0 auto">
+                    <span class="help-inline">选择日期</span>
+                    <input type="text" readonly style="cursor: pointer" datetimepicker flag="date" ng-model="date"/>
+                    <button class="btn btn-primary btn-small" style="position: relative;left: 285px;" ng-click="scroll='top'"><i class="icon-circle-arrow-up"></i>&nbsp;&nbsp;top</button>
+                    <button class="btn btn-primary btn-small" style="position: relative;left: 290px;" ng-click="scroll='bottom'"><i class="icon-circle-arrow-down"></i>&nbsp;&nbsp;bottom</button>
+                </form>
+                <div scroll position="scroll" style="height: 635px;font-size: 14px;overflow-x: hidden;overflow-y: scroll;margin-top: 20px;margin-bottom: 20px">
+                    <div ng-repeat="item in data">{{ item }}</div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<div footer></div>

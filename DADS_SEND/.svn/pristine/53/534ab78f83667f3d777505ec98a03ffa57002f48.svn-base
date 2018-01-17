@@ -1,0 +1,109 @@
+package com.cmcc.mina.component.jiays.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.jiays.No8BPBSPackage;
+import com.cmcc.mina.util.ByteUtil;
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.DateUtil;
+
+/** 
+ * 血压计登录包
+ * 项目名称：MinaGateWay   
+ * 类名称：BPNo1LoginParer   
+ * 类描述：暂无 
+ * 创建人：changyaobin   
+ * 创建时间：2014-4-16 上午10:55:40   
+ * 修改人：changyaobin   
+ * 修改时间：2014-4-16 上午10:55:40   
+ * 修改备注： 
+ * @version   
+ */
+/********************************************************************************************
+8号包，一次测量结果
+                                         参数：
+				Year(2)	 Month(1) Day(1)	Hour(1)	Minute(1)	
+				data_type(1)	数据类型 ：1 血压；2 餐前血糖；3普通血糖;4 体重；
+				SP(2)：收缩压（大端表示）	DP(2)：舒张压(大端表示) HR(2)：心率(大端表示)
+				BG(2)	血糖（大端表示）
+				WT(2)	体重
+				功能：
+				1.收到血压计的8号包数据
+
+********************************************************************************************/
+public class No8BPBSParer extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		if(buffer.get(8)==8 && buffer.get(9)==2){
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		Logger.writeLog("1.收到8号包数据：");
+		int sp = 0;		//高压（收缩压）
+		int dp = 0;  	//低压（舒张压）
+		int hr = 0;     //心率
+		float bg = 0;   //血糖
+		No8BPBSPackage data = new No8BPBSPackage();
+		byte[] sp_b = new byte[2];	//高压（收缩压）
+		byte[] dp_b = new byte[2];	//低压（舒张压）
+		byte[] hr_b = new byte[2];	//心率
+		byte[] bg_b = new byte[2];	//血糖
+
+		int min = buffer.get(11);
+		int hour = buffer.get(12);
+		int day = buffer.get(13);
+		int month = buffer.get(14);
+		int year = buffer.get(15);
+		String bpDate = DateUtil.getDate(year, month, day);
+		Logger.writeLog(year+"年"+month+"月"+day+"日");
+		
+		
+		StringBuffer sbtime = new StringBuffer();
+		sbtime.append(bpDate).append(" ")
+			.append(hour).append(":").append(min).append(":").append("00");
+		String time = DateUtil.format(sbtime.toString());
+		System.out.println("measureTime : "+time);
+		
+		int data_type=buffer.get(24);
+
+		if(data_type==1)
+		{
+			Logger.writeLog("血压测量数据");
+			sp_b[0] = buffer.get(25);
+			sp_b[1] = buffer.get(26);
+			dp_b[0] = buffer.get(27);
+			dp_b[1] = buffer.get(28);
+			hr_b[0] = buffer.get(29);
+			hr_b[1] = buffer.get(30);
+			sp=ByteUtil.getShortByLittlePattern(sp_b,0);		
+			dp=ByteUtil.getShortByLittlePattern(dp_b,0);	
+			hr=ByteUtil.getShortByLittlePattern(hr_b,0);
+		}
+		
+		else if(data_type==2 || data_type==3)
+		{
+			Logger.writeLog("血糖数据");
+			bg_b[0] = buffer.get(25);
+			bg_b[1] = buffer.get(26);
+			bg = ByteUtil.getShortByLittlePattern(bg_b, 0);
+			bg=bg/10;
+		}
+		data.setDatatype(String.valueOf(data_type));
+		data.setMeasureTime(time);
+		data.setHeartrate(String.valueOf(hr));
+		data.setHighpressure(String.valueOf(sp));
+		data.setLowpressure(String.valueOf(dp));
+		data.setBloodsugar(String.valueOf(bg));
+
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return data;
+	}
+}

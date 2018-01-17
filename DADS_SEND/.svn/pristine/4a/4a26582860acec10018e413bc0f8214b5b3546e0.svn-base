@@ -1,0 +1,244 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.PackagedataDAO;
+import com.cmcc.monitor.Service.PackDataService;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.Packagedata;
+@Service
+public class PackDataServiceImpl implements PackDataService {
+	private static Logger log = Logger.getLogger(PackDataServiceImpl.class);
+	@Autowired
+	private PackagedataDAO packDao;
+	@Override
+	public List<Packagedata> getPacksByCondition(JSONObject map) {
+		String beginRecTime = "";
+		if(map.containsKey("beginRecTime"))
+			beginRecTime = map.getString("beginRecTime");
+		
+		String endRecTime = "";	
+		if(map.containsKey("endRecTime"))
+			endRecTime = map.getString("endRecTime");
+		
+		String begginSendTime = "";	
+		if(map.containsKey("begginSendTime"))
+			begginSendTime = map.getString("begginSendTime");
+		
+		String endSendTime = "";	
+		if(map.containsKey("endSendTime"))
+			endSendTime = map.getString("endSendTime");
+		
+		String patientId = "";	
+		if(map.containsKey("patientId"))
+			patientId = map.getString("patientId");
+		
+		String packNum = "";	
+		if(map.containsKey("packNum"))
+			packNum = map.getString("packNum");
+		
+		String sendFlag = "";	
+		if(map.containsKey("sendFlag"))
+			sendFlag = map.getString("sendFlag");
+		
+		String company = "";	
+		if(map.containsKey("company"))
+			company = map.getString("company");
+		
+		String deviceId = "";	
+		if(map.containsKey("deviceId"))
+			deviceId = map.getString("deviceId");
+		
+		int page = 0;	
+		if(map.containsKey("page"))
+			page = map.getInt("page");
+		
+		int pageSize = Integer.MAX_VALUE;	
+		if(map.containsKey("pageSize"))
+			pageSize = map.getInt("pageSize");
+		
+		//组织查询条件
+		StringBuilder condition = new StringBuilder(" where 1=1 ");
+		if(!("".equals(beginRecTime) && "".equals(endRecTime)) )
+		{
+			condition.append(" and o.receiveTime between '"+("".equals(beginRecTime)?"1970-01-01":beginRecTime)+"' and '"+("".equals(endRecTime)?"2999-09-09":endRecTime)+"'");
+		}
+		if(!("".equals(begginSendTime) && "".equals(endSendTime)) )
+		{
+			condition.append(" and o.receiveTime between '"+("".equals(begginSendTime)?"1970-01-01":begginSendTime)+"' and '"+("".equals(endSendTime)?"2999-09-09":endSendTime)+"'");
+		}
+		if(!"".equals(patientId))
+		{
+			condition.append(" and o.patientId='"+patientId+"'");
+		}
+		if(!"".equals(packNum))
+		{
+			condition.append(" and o.packageNum='"+packNum+"'");
+		}
+		if(!"".equals(sendFlag))
+		{
+			condition.append(" and o.flag='"+sendFlag+"'");
+		}
+		if(!"".equals(company))
+		{
+			condition.append(" and o.company='"+company+"'");
+		}
+
+		if(!"".equals(deviceId))
+		{
+			condition.append(" and o.deviceId='"+deviceId+"'");
+		}
+		condition.append(" order by o.receiveTime desc");
+			
+		return packDao.findScrollPage(page, pageSize, condition.toString());
+	}
+	
+	public boolean deletePacks(JSONArray ids)
+	{
+		for(int i=0;i<ids.size();i++)
+		{
+			this.packDao.delete(ids.getInt(i));
+		}
+		return true;
+	}
+	/**
+	 * 重发数据，flag,sendFlag 均置为 0 
+	 */
+	public boolean reSendPacks(JSONArray ids)
+	{
+		for(int i=0;i<ids.size();i++)
+		{
+			Packagedata pack = this.packDao.findById(ids.getInt(i));
+				pack.setFlag("0");
+				pack.setSendFlag("0");
+				this.packDao.update(pack);
+		}
+		return true;
+	}
+
+	   public boolean updatePack(JSONObject param)
+	   {
+		   int id = param.getInt("id");
+		   Packagedata pack = this.packDao.findById(id);
+		   pack.setCompany(param.containsKey("company")?param.getString("company"):pack.getCompany());
+		   pack.setPatientId(param.containsKey("patientId")?param.getString("patientId"):pack.getPatientId());
+		   pack.setDataNewcontentStepcount2(param.containsKey("dataNewcontentStepcount2")?param.getString("dataNewcontentStepcount2"):pack.getDataNewcontentStepcount2());
+		   pack.setFlag(param.containsKey("flag")?param.getString("flag"):pack.getFlag());
+		   pack.setSendFlag(param.containsKey("sendFlag")?param.getString("sendFlag"):pack.getFlag());
+		   pack.setPackageNum(param.containsKey("packageNum")?param.getString("packageNum"):pack.getPackageNum());
+		   pack.setReceiveTime(param.containsKey("receiveTime")?param.getString("receiveTime"):pack.getReceiveTime());
+		   pack.setSendTime(param.containsKey("sendTime")?param.getString("sendTime"):pack.getSendTime());
+		   pack.setStep3newvalue(param.containsKey("step3newvalue")?param.getString("step3newvalue"):pack.getStep3newvalue());
+		   pack.setStep2newvalue(param.containsKey("step2newvalue")?param.getString("step2newvalue"):pack.getStep2newvalue());
+		   pack.setTotalSteps(param.containsKey("totalSteps")?param.getString("totalSteps"):pack.getTotalSteps());
+		   pack.setLocation(param.containsKey("location")?param.getString("location"):pack.getLocation());
+		   this.packDao.update(pack);
+		   return true;
+	   }
+	   
+	   public boolean addPack(JSONObject param)
+	   {
+		   Packagedata pack = new Packagedata();
+		   pack.setCompany(param.containsKey("company")?param.getString("company"):pack.getCompany());
+		   pack.setPatientId(param.containsKey("patientId")?param.getString("patientId"):pack.getPatientId());
+		   pack.setDataNewcontentStepcount2(param.containsKey("dataNewcontentStepcount2")?param.getString("dataNewcontentStepcount2"):pack.getDataNewcontentStepcount2());
+		   pack.setFlag(param.containsKey("flag")?param.getString("flag"):pack.getFlag());
+		   pack.setPackageNum(param.containsKey("packageNum")?param.getString("packageNum"):pack.getPackageNum());
+		   pack.setReceiveTime(param.containsKey("receiveTime")?param.getString("receiveTime"):pack.getReceiveTime());
+		   pack.setSendTime(param.containsKey("sendTime")?param.getString("sendTime"):pack.getSendTime());
+		   pack.setStep3newvalue(param.containsKey("step3newvalue")?param.getString("step3newvalue"):pack.getStep3newvalue());
+		   pack.setStep2newvalue(param.containsKey("step2newvalue")?param.getString("step2newvalue"):pack.getStep2newvalue());
+		   pack.setTotalSteps(param.containsKey("totalSteps")?param.getString("totalSteps"):pack.getTotalSteps());
+		   pack.setLocation(param.containsKey("location")?param.getString("location"):pack.getLocation());
+		   this.packDao.insert(pack);
+		   return true;
+	   }
+
+	@Override
+	public String getPackagedataForMT(String phone, String queryDate,
+			String type) {
+		JSONArray ja = new JSONArray();
+		List<HashMap<String,String>> data = null;
+		if("SIMPLE".equalsIgnoreCase(type)){
+			data = C3P0Util.getData("select data_newcontent_stepcount2 from packagedata where patientID='"+phone+"' and DATE(realTime)='"+queryDate+"' order by realTime asc");
+			for(HashMap<String, String> map : data){
+				ja.add(HandleSimplePackage(map.get("data_newcontent_stepcount2")));
+			}
+		}else if("STEPCOUNT2".equalsIgnoreCase(type)){
+			data = C3P0Util.getData("select STEP2NEWVALUE from packagedata where patientID='"+phone+"' and packageNum='8-2' and DATE(realTime)='"+queryDate+"' order by receiveTime asc");
+			for(HashMap<String, String> map : data){
+				ja.add(HandleDetailPackage(map.get("STEP2NEWVALUE")));
+			}
+			
+		}else if("STEPCOUNT3".equalsIgnoreCase(type)){
+			data = C3P0Util.getData("select STEP3NEWVALUE from packagedata where patientID='"+phone+"' and packageNum='8-4' and DATE(realTime)='"+queryDate+"' order by receiveTime asc");
+			for(HashMap<String, String> map : data){
+				ja.add(HandleEffectivePackage(map.get("STEP3NEWVALUE")));
+			}
+		}
+			
+		return ja.toString();
+	}
+	private String HandleSimplePackage(String StepCountSimple) {
+		JSONObject jo = new JSONObject();
+		try{
+		    //解析简要包数据
+		    String[] simpleArray = StepCountSimple.split(" ");
+		    
+			String dateTemp = simpleArray[2];
+			float calSum = Float.valueOf(simpleArray[6])/10;
+			int stepSum = Integer.valueOf(simpleArray[7]);
+			int distanceSum = Integer.valueOf(simpleArray[8]);
+			int drgreeTwo = Integer.valueOf(simpleArray[10]);
+			int degreeThree = Integer.valueOf(simpleArray[11]);
+			int degreeFour = Integer.valueOf(simpleArray[12]);
+			int timeSum = drgreeTwo + degreeThree + degreeFour;
+			int uploadType = Integer.valueOf(simpleArray[13]);
+			jo.put("encounterDatetime", DateUtil.formatRestfulDate(dateTemp));
+			jo.put("dataType", uploadType);
+			jo.put("calsum", calSum);
+			jo.put("distancesum", distanceSum);
+			jo.put("steps", stepSum);
+			jo.put("timesum", timeSum);
+			jo.put("degreeOneTime", drgreeTwo);
+			jo.put("degreeTwoTime", degreeThree);
+			jo.put("degreeThreeTime", degreeFour);
+		}catch(Exception e){
+			log.info("===simple-data-error===:"+e.getMessage()+"---"+StepCountSimple);
+		}
+		return jo.toString();
+	}
+	private String HandleDetailPackage(String stepcount2) {
+		String data = "";
+		try{
+			//解析详细包数据
+			String[] valArray = stepcount2.split(" ");
+			JSONObject jsonObject=JSONObject.fromObject(valArray[2].substring(1, valArray[2].length()-1));
+			data = jsonObject.getString("data");
+		}catch(Exception e){
+			log.info("===simple-data-error===:"+e.getMessage()+"---"+stepcount2);
+		}
+		return data;
+	}
+	private String HandleEffectivePackage(String stepcount2) {
+		String data = "";
+		try{
+			//解析详细包数据
+			String[] valArray = stepcount2.split(" ");
+			JSONObject jsonObject=JSONObject.fromObject(valArray[2].substring(1, valArray[2].length()-1));
+			data = jsonObject.getString("data");
+		}catch(Exception e){
+			log.info("===simple-data-error===:"+e.getMessage()+"---"+stepcount2);
+		}
+		return data;
+	}
+}

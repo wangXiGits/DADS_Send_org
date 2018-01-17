@@ -1,0 +1,66 @@
+package com.cmcc.gateway.restful.Contorller;
+
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+import com.cmcc.monitor.Util.ValidateUtil;
+import com.cmcc.send.observer.impl.SubjectFactory;
+
+public class CommonHandlerUtil {
+	private static Logger log = Logger.getLogger(CommonHandlerUtil.class);
+	public static String CommonHandlerMethod(HttpServletRequest request,
+			String tablename,String dataTypeAssign) {
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("datas");
+		log.info("datas length = "+param.length());
+		log.debug("datas："+param);
+		try {
+			JSONObject map = JSONObject.fromObject(param).getJSONObject("data");
+			String dataType = map.getString("dataType");
+			if(dataType!=null && dataType.equals(dataTypeAssign)){
+				String deviceId = map.getString("deviceId");
+				String collectDate = map.getString("collectDate");
+				String dataValue = map.getString("dataValue");
+				log.info("datatype="+dataType+", deviceId="+deviceId+", collectdate="+collectDate);
+				if(ValidateUtil.paramCheck(deviceId,collectDate,dataType)){
+					String phone = DeviceIDResolver.searchPatientidByDeviceid(deviceId);
+					String appType = DeviceIDResolver.searchAppTypeByDeviced(deviceId);
+					
+					log.info("获取到手机号："+phone);
+					if(ValidateUtil.paramCheck(phone)){
+						String sql = "insert into  "+tablename+"(phone,deviceId,apptype,dataType,realTime,datavalue,receiveTime) values(?,?,?,?,?,?,now())";
+						boolean ret = C3P0Util.insertOrUpdateData(sql, phone,deviceId,appType,dataType,collectDate,dataValue);
+						if(ret){
+							SubjectFactory.getSubject(appType, dataType).notifyObserver();
+							result.put("status", "SUCCESS");
+							result.put("info", "上传成功");
+						}else{
+							result.put("status", "FAILURE");
+							result.put("info", "数据保存失败");
+						}
+					}else{
+						result.put("status", "FAILURE");
+						result.put("info", "设备号未注册");
+					}
+				}else{
+					result.put("status", "FAILURE");
+					result.put("info", "参数信息不完整");
+				}
+			}else{
+				result.put("status", "FAILURE");
+				result.put("info", "无效数据包");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			result.put("status", "FAILURE");
+			result.put("info", "数据格式错误");
+		}
+		log.info(result.toString());
+		return result.toString();
+	}
+}

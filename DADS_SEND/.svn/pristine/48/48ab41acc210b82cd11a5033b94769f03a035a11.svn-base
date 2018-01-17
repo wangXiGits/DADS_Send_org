@@ -1,0 +1,17 @@
+package com.cmcc.monitor.Service;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import com.cmcc.monitor.base.Domain.ResetPersonsPerDay;
+import com.cmcc.monitor.base.Domain.ResetTimesPerPerson;
+import com.cmcc.monitor.base.Domain.Resetrecord;
+
+public interface ResetrecordService {
+
+	public List<Resetrecord> getAllResetrecord(JSONObject dateIntaval);
+	List<ResetTimesPerPerson> getResetTimesPerPersonList(JSONObject json);
+	List<ResetPersonsPerDay> getResetPersonsPerDayList(JSONObject json);
+	List<Resetrecord> getAllResetrecordPerDay(JSONObject json);
+}

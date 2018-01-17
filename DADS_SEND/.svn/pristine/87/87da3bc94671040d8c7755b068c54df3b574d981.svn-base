@@ -1,0 +1,71 @@
+package com.cmcc.monitor.Util;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+
+import com.cmcc.monitor.base.Domain.Usertbl;
+
+public class ExcelRead {
+	public static List<Usertbl> readmedcinefromexcel(InputStream f) {
+		List<Usertbl> l = new ArrayList<Usertbl>();
+		try {
+			HSSFWorkbook book = new HSSFWorkbook(f);
+			HSSFSheet sheet = book.getSheetAt(0);
+			int count = sheet.getRow(3).getPhysicalNumberOfCells();
+			System.out.println("列数：" + count);
+			for (int i = 3; i <= sheet.getLastRowNum(); i++) {
+				
+				HSSFRow row = sheet.getRow(i);
+				if(row == null)
+					continue;
+				Usertbl m = new Usertbl();
+				String pName = getStringFromCell(row, 0);
+				m.setPname(pName);
+				String patientId = getStringFromCell(row, 1);
+				m.setPatientId(patientId);
+
+				String company = getStringFromCell(row, 2);
+				m.setCompany(company);
+				
+				String deviceId = getStringFromCell(row, 3);
+				m.setDeviceId(deviceId);
+
+				String deviceType = getStringFromCell(row, 4);
+				m.setDeviceType(deviceType);
+				
+				String deviceUseFlag = getStringFromCell(row, 5);
+				m.setDeviceUseFlag(deviceUseFlag);
+				
+				String email = getStringFromCell(row, 6);
+				m.setEmail(email);
+				
+				String teamName = getStringFromCell(row, 7);
+				m.setTeamName(teamName);
+				l.add(m);
+			}
+			System.out.println("lastRowNum:"+sheet.getLastRowNum());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return l;
+	}
+
+	public static String getStringFromCell(HSSFRow row, int cellNum) {
+		String ret = "";
+		HSSFCell cell = null;
+		cell = row.getCell(cellNum);
+		if (cell != null) {
+			if (cell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+				ret = String.valueOf(cell.getNumericCellValue());
+			else if (cell.getCellType() == HSSFCell.CELL_TYPE_STRING) {
+				ret = cell.getStringCellValue();
+			}
+		}
+		return ret;
+	}
+}

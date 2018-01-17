@@ -1,0 +1,125 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 
+ * 项目名称：DADS   
+ * 类名称：PatientInfo   
+ * 类描述：Mongodb bean
+ * 创建人：lw   
+ * 创建时间：2014-5-8 下午03:01:36   
+ * 修改人：lw   
+ * 修改时间：2014-5-8 下午03:01:36   
+ * 修改备注： 
+ * @version
+ */
+public class PatientInfo implements Serializable{
+	private static final long serialVersionUID = -4286223553272702231L;
+	private String name;
+	private String idcard;
+	private String phone;
+	private String email;
+	private String sex;
+	private String birth;
+	private String password;
+	@Override
+	public String toString() {
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("name", name);
+		map.put("idcard", idcard);
+		map.put("phone", phone);
+		map.put("email", email);
+		map.put("sex", sex);
+		map.put("birth", birth);
+		map.put("password", password);
+		return map.toString();
+	};
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	/**
+	 * @return the idcard
+	 */
+	public String getIdcard() {
+		return idcard;
+	}
+	/**
+	 * @param idcard the idcard to set
+	 */
+	public void setIdcard(String idcard) {
+		this.idcard = idcard;
+	}
+	/**
+	 * @return the phone
+	 */
+	public String getPhone() {
+		return phone;
+	}
+	/**
+	 * @param phone the phone to set
+	 */
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	/**
+	 * @return the email
+	 */
+	public String getEmail() {
+		return email;
+	}
+	/**
+	 * @param email the email to set
+	 */
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	/**
+	 * @return the sex
+	 */
+	public String getSex() {
+		return sex;
+	}
+	/**
+	 * @param sex the sex to set
+	 */
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+	/**
+	 * @return the birth
+	 */
+	public String getBirth() {
+		return birth;
+	}
+	/**
+	 * @param birth the birth to set
+	 */
+	public void setBirth(String birth) {
+		this.birth = birth;
+	}
+	/**
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
+	/**
+	 * @param password the password to set
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+}

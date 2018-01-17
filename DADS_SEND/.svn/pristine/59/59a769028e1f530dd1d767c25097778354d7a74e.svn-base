@@ -1,0 +1,83 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+@Controller
+@RequestMapping("/logger.json")
+public class LoggerManageController {
+	@RequestMapping(params = "info=detail")
+	public void detail(HttpServletRequest request,HttpServletResponse response) throws Exception{
+			String logDate = request.getParameter("logDate");
+			String logType = request.getParameter("logType");
+			String logName = null;
+			char[] result = null;
+			File f = null;
+			try {
+				String logsuffix = "";
+				if(!logDate.equals(DateUtil.getToday())){
+					logsuffix = "."+logDate;
+				}
+				if("platform".equals(logType)){
+					String path = request.getSession().getServletContext().getRealPath("/log")+"\\"+PropertiesReader.getProp("DADSLogPath");
+					logName = "系统操作日志";
+					System.out.println(path);
+					f= new File(path+logsuffix);
+				}else if("gateway".equals(logType)){
+					f= new File(PropertiesReader.getProp("DADSLogPath")+logsuffix) ;
+					logName = "数据网关日志";
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}finally{
+				response.reset();
+				response.setContentType("text/plain;charset=utf-8");
+				PrintWriter pw = response.getWriter();
+				if(f != null && f.isFile()){
+					Reader input = new FileReader(f);	// 准备好一个输入的对象
+					System.out.println(f.length());
+					// 进行读操作
+					result = new char[2*1024] ;// 每次读取0.5M字节
+					int num  = 0;
+					//pw.write("{\"data\":\"");
+					while ((num=input.read(result)) != -1) {
+						// 写到前端
+						pw.write(result);
+						//pw.write("{\"end\":\"没有啦！\"}]");
+						pw.flush();
+						reset(result);
+						System.out.println("length="+num);
+					}
+					//pw.write("\"}");
+					pw.flush();
+					System.out.println("日志路径："+f.getAbsolutePath());
+					input.close();
+				}else{
+					result = (logDate+"没有生成"+logName).toCharArray();
+					pw.write(result);
+					pw.flush();
+				}
+				pw.close();
+			}
+	}
+	/**
+	 * 置空字符数组
+	 * @param result
+	 */
+	private void reset(char[] result) {
+		for(int i=0;i<result.length;i++){
+			result[i] = 0;
+		}
+	}
+}

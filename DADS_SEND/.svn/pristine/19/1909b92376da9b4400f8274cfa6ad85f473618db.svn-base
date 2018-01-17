@@ -1,0 +1,50 @@
+package com.cmcc.monitor.task;
+import java.util.Timer;
+
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.DataStatisticsUtil;
+import com.cmcc.monitor.Util.DateUtil;
+/**
+ * 
+ *
+ */
+public class DataStatisticsTask implements Runnable {
+	@Override
+	public void run() {
+		
+		//get user param info from ploatform 
+		Timer timer = new Timer();
+		/*timer.schedule( new java.util.TimerTask(){
+			@Override
+			public void run() {
+				Logger.writeLog("startup the taskTimer to get user params from platform ...") ;
+				ParamInfoSendUtil.updateParamInfoFromPlatform();
+			}
+		}, 1000, 1000*60*33);*/
+		//send monitor data to gateway,do not set time less than 5 minutes ,otherwise it will be canelled!
+		/*timer.schedule( new java.util.TimerTask(){
+			@Override
+			public void run() {
+				Logger.writeLog("startup the taskTimer to send monitor data ...") ;
+				MonitorSendInfo.sendData();
+			}
+		}, 10000, 1000*60*10);
+		
+		timer.scheduleAtFixedRate(new java.util.TimerTask(){
+			@Override
+			public void run() {
+				Logger.writeLog("startup the taskTimer to send monitor data ...") ;
+				MonitorSendInfo.sendData();
+			}
+		}, new Date(), 1000*60*60*24);*/
+		// statistics packagedata num,execute per 8 hours
+		timer.scheduleAtFixedRate(new java.util.TimerTask(){
+			@Override
+			public void run() {
+				Logger.writeLog("statistics packagedata num...") ;
+				DataStatisticsUtil.statistics();
+			}
+		}, DateUtil.getDate(DateUtil.getToday()), 1000*60*60*6);
+	}
+	
+}

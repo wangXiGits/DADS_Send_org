@@ -1,0 +1,7 @@
+package com.cmcc.mina.packet.milink.sports;
+
+import com.cmcc.mina.packet.PackageData;
+
+public class LogoutPacket extends PackageData {
+
+}

@@ -1,0 +1,36 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.UserstatisticsDAO;
+import com.cmcc.monitor.Service.UserstatisticsService;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.Userstatistics;
+
+@Service
+public class UserstatisticsServiceImpl implements UserstatisticsService {
+
+	@Autowired
+	private UserstatisticsDAO userstatisticsDAO;
+	@Override
+	public List<Userstatistics> getAllUserstatistics(JSONObject dateIntaval){
+		String date = DateUtil.getToday();
+		String otherCondition = "";
+		if(dateIntaval.containsKey("date"))
+			date = dateIntaval.getString("date");
+		if(dateIntaval.containsKey("company"))
+			otherCondition = " and o.company='"+dateIntaval.getString("company")+"'";
+		if(dateIntaval.containsKey("deviceId"))
+			otherCondition = " and o.deviceId='"+dateIntaval.getString("deviceId")+"'";
+		if(dateIntaval.containsKey("patientId"))
+			otherCondition = " and o.patientId='"+dateIntaval.getString("patientId")+"'";
+		otherCondition = otherCondition + " order by o.nodataDays desc";
+		return userstatisticsDAO.findScrollPage(0,Integer.MAX_VALUE," where o.deviceId!='' and o.statisticsTime = '"+date+"' "+otherCondition);
+	}
+
+}

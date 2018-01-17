@@ -1,0 +1,77 @@
+package com.cmcc.mina.state.milink.sports.impl;
+
+import java.util.Arrays;
+import java.util.Map;
+
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.milink.sports.ConfigPacket;
+import com.cmcc.mina.state.milink.SportsPacketHandleState;
+import com.cmcc.mina.util.GetPushDownAckUtil;
+import com.cmcc.mina.util.Logger;
+import com.cmcc.mina.util.ParamInfoSendUtil;
+/**
+ * 处理配置请求数据包
+ * 项目名称：DADS   
+ * 类名称：SportConfigState   
+ * 类描述：暂无 
+ * 创建人：RCM
+ * 创建时间：2014-5-14 上午11:08:18   
+ * 修改人：
+ * 修改时间：
+ * 修改备注： 
+ * @version
+ */
+public class SportConfigState implements SportsPacketHandleState {
+	@Override
+	public boolean handlePacket(IoSession session, Object message) {
+		log.info(this.getClass().getSimpleName()+".handlePacket() begin...");
+		ConfigPacket packet = null;
+		byte[] ack = null;
+		if(message != null && message instanceof ConfigPacket)
+		{
+			packet = (ConfigPacket) message;
+			String patientId = packet.getPatientID();
+			if(patientId==null || "".equals(patientId)){
+				patientId = (String) session.getAttribute("patientId");
+			}
+			//配置请求报文
+			if(packet.isConfigReq()){
+				Map<String, String> userParamMap = ParamInfoSendUtil.readParamInfo(patientId);
+				String needsend = "";
+				if(userParamMap != null && userParamMap.get("needsend") != null){
+					needsend = userParamMap.get("needsend");
+				}
+				if("1".equals(needsend)){//下推体重等参数
+					ack = GetPushDownAckUtil.getUserParamAck(userParamMap);
+				}else if ("2".equals(needsend)){//下推网关ip,domain
+					ack = GetPushDownAckUtil.getDataIpAndDomainAck(userParamMap);
+				}else if ("3".equals(needsend)){//下推自动上传时间
+					//***** add by rencm for PWS0014 on 2013/08/29 *****
+					ack = GetPushDownAckUtil.getAutoUploadTimeAck(userParamMap);
+				}else if("4".equals(needsend)){
+					Logger.writeLog("ip已下推，标识位未置0");
+				}else{//不推送参数
+					Logger.writeLog("needsend 标识为： "+needsend+"，不进行下推。返回长度为12的默认的ack。");
+				}
+				//ACK消息回去，下发配置信息
+				sendConfigAck(session, ack);
+			//配置结果报文
+			}else{
+				//Do not need send ACK to stepcounter
+				ParamInfoSendUtil.closeParamInfoSendFlag(patientId);
+			}
+			log.info(this.getClass().getSimpleName()+".handlePacket() end.");
+			return true;
+		}
+		return false;
+	}
+
+	private void sendConfigAck(IoSession session,byte[] ack){
+		if(ack==null ) ack =  new byte[]{-89,-72,0,1,0,0,0,12,-98,1,-76, -47};
+		
+		session.write(IoBuffer.wrap(ack));
+		Logger.writeLog("in method sendConfigAck end the ack:"+Arrays.toString(ack));
+	}
+}

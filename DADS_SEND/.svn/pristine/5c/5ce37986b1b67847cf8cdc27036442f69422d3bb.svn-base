@@ -1,0 +1,73 @@
+package com.cmcc.mina.handler;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.strategy.JiaysPacketHandleStrategy;
+import com.cmcc.mina.strategy.MHDataPacketHandleStrategy;
+import com.cmcc.mina.strategy.MilinkSportsPacketHandleStrategy;
+import com.cmcc.mina.strategy.MilinkloodPressurePacketHandleStrategy;
+/**
+ * the handler will handle all connections managed by this service.
+ */
+public class StrategyFactoryHandler extends IoHandlerAdapter {
+	public static Logger log = Logger.getLogger(StrategyFactoryHandler.class);
+	@SuppressWarnings("rawtypes")
+	private static Map<String,Class> classMap = new HashMap<String, Class>();
+	//策略模式
+	PackageData packet = null;
+	public MHDataPacketHandleStrategy chain = null;
+	static
+	{
+		/**
+		 * 不同的数据包名对应不同的策略
+		 */
+		classMap.put("sports", MilinkSportsPacketHandleStrategy.class);
+		classMap.put("bloodpressure", MilinkloodPressurePacketHandleStrategy.class);
+		classMap.put("jiays", JiaysPacketHandleStrategy.class);
+	}
+
+	@Override
+	public void messageReceived(IoSession session, Object message)
+			throws Exception {
+		log.info(this.getClass().getSimpleName()+".messageReceived() begin...");
+		if(message!=null && message instanceof PackageData)
+		{
+
+			packet = (PackageData)message;
+			//根据数据包内容获取不同处理策略实例
+			if(packet!=null){
+				chain = (MHDataPacketHandleStrategy) classMap.get(packet.getName()).newInstance();
+				chain.handle(session, message);
+			}else{
+				log.error("无效数据包！");
+			}
+		}else{
+			log.error("数据格式错误！！！");
+		}
+		log.info(this.getClass().getSimpleName()+".messageReceived() end.");
+	}
+
+	@Override
+	public void sessionIdle(IoSession session, IdleStatus status)
+			throws Exception {
+		//super.sessionIdle(session, status);
+		if(IdleStatus.READER_IDLE.equals(status)){
+			log.info("session is closed");
+			session.close(true);
+		}else{
+			super.sessionIdle(session, status);
+		}
+	}
+	@Override
+	public void exceptionCaught(IoSession session, Throwable cause) {
+		log.error("StrategyFactoryHandler caught exception");
+		cause.printStackTrace();
+	}
+}

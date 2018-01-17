@@ -1,0 +1,11 @@
+package com.cmcc.mina.util;
+
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.state.milink.SportsPacketHandleState;
+
+public class HandleUtil {
+	public static boolean abc(SportsPacketHandleState state,IoSession session, Object message){
+		return state.handlePacket(session, message);
+	}
+}

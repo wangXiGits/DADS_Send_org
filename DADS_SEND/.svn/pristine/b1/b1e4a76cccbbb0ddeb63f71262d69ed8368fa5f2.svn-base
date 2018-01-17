@@ -1,0 +1,185 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import jxl.Workbook;
+import jxl.write.WritableWorkbook;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.ResetrecordService;
+import com.cmcc.monitor.Service.UserstatisticsService;
+import com.cmcc.monitor.Service.UsertblService;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.ExcelUtil;
+import com.cmcc.monitor.Util.UsertblUtil;
+import com.cmcc.monitor.base.Domain.ActivateStatistics;
+import com.cmcc.monitor.base.Domain.ResetPersonsPerDay;
+import com.cmcc.monitor.base.Domain.ResetTimesPerPerson;
+import com.cmcc.monitor.base.Domain.Resetrecord;
+import com.cmcc.monitor.base.Domain.Userstatistics;
+import com.cmcc.monitor.base.Domain.Usertbl;
+
+@Controller
+public class DataExportController extends BaseController{
+	private static Logger log = Logger.getLogger(DataExportController.class);	
+	@Autowired
+	private UserstatisticsService userstatisticsService;
+	@Autowired
+	private ResetrecordService resetrecordService;
+	@Autowired
+	private UsertblService usertblService;
+	/**
+	 * 数据分析结果导出
+	 * @param request
+	 * @param response
+	 * void
+	 */
+	@RequestMapping(value="/analysisExportExcel.json",params={"data"})
+	public void analysisExportExcel(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+		
+			JSONObject json = JSONObject.fromObject(data);
+			String strDate = json.getString("date");
+			String fileName = strDate+"_数据分析结果";
+			List<Userstatistics> userstatisticslist = userstatisticsService.getAllUserstatistics(json);
+			List<Resetrecord> Resetrecordlist = resetrecordService.getAllResetrecordPerDay(json);
+			List<ResetPersonsPerDay> resetPersonsPerDaylist = resetrecordService.getResetPersonsPerDayList(json);
+			List<ResetTimesPerPerson> resetTimesPerPersonlist = resetrecordService.getResetTimesPerPersonList(json);
+			if(true){
+				OutputStream os = null;
+				WritableWorkbook wwb = null;
+				try {
+					os = new FileOutputStream(fileName + ".xls");
+					wwb = Workbook.createWorkbook(os);
+					ExcelUtil.doConfigExcel(0,"连续未上传用户", userstatisticslist, "com.cmcc.monitor.base.Domain.Userstatistics", wwb);
+					ExcelUtil.doConfigExcel(1,"数据异常用户", Resetrecordlist, "com.cmcc.monitor.base.Domain.Resetrecord", wwb);
+					ExcelUtil.doConfigExcel(2,"每日异常人数", resetPersonsPerDaylist, "com.cmcc.monitor.base.Domain.ResetPersonsPerDay", wwb);
+					ExcelUtil.doConfigExcel(3,"用户异常次数", resetTimesPerPersonlist, "com.cmcc.monitor.base.Domain.ResetTimesPerPerson", wwb);
+				} catch (Exception e) {
+					e.printStackTrace();
+					log.error("excel导出异常！");
+				} finally {
+					try {
+						wwb.write();
+						wwb.close();
+						os.close();
+					} catch (Exception e) {
+						log.error("EXCEL导出出现流关闭异常！");
+						e.printStackTrace();
+					}
+				}
+				//设置相应信息
+				responseOutput(response, fileName);
+			}
+		}else
+			writeToClient(response,"查询结果为空！");
+	}
+	/**
+	 * 用户激活情况导出
+	 * @param request
+	 * @param response
+	 * void
+	 * @throws UnsupportedEncodingException 
+	 */
+	@RequestMapping(value="/activateExportExcel.json",params={"data"})
+	public void activateExportExcel(HttpServletRequest request,HttpServletResponse response) throws UnsupportedEncodingException
+	{
+		String data = request.getParameter("data");
+		data = new String(data.getBytes("ISO-8859-1"), "utf-8");
+		log.info("parameter data="+data);
+		String fileName = DateUtil.getToday()+"_用户使用情况";
+		String companySql = "";
+		if(!"".equals(data)){
+			JSONObject json = JSONObject.fromObject(data);
+			if(json.containsKey("companyName") && json.getString("companyName")!=null){
+				companySql = " and companyName like '%"+json.getString("companyName")+"%'";
+				fileName = fileName+"_"+json.getString("companyName");
+			}
+		}
+		//已激活已上传
+		String sql1 = " where o.deviceUseFlag='1' "+companySql+" and o.isActivate='1' and o.lastTime is not null ORDER BY companyName,teamName";
+		//已激活未上传
+		String sql2 = " where o.deviceUseFlag='1' "+companySql+" and o.isActivate='1' and o.lastTime is null ORDER BY companyName,teamName";
+		//未激活已上传
+		String sql3 = " where o.deviceUseFlag='1' "+companySql+" and o.isActivate='0' and o.lastTime is not null ORDER BY companyName,teamName";
+		//未激活未上传
+		String sql4 = " where o.deviceUseFlag='1' "+companySql+" and o.isActivate='0' and o.lastTime is null ORDER BY companyName,teamName";
+		
+		List<Usertbl> usertblList1 = usertblService.findScrollPage(1, 1000, sql1);
+		List<Usertbl> usertblList2 = usertblService.findScrollPage(1, 1000, sql2);
+		List<Usertbl> usertblList3 = usertblService.findScrollPage(1, 1000, sql3);
+		List<Usertbl> usertblList4 = usertblService.findScrollPage(1, 1000, sql4);
+		List<ActivateStatistics> as1 = UsertblUtil.usertblToActivateSt(usertblList1);
+		List<ActivateStatistics> as2 = UsertblUtil.usertblToActivateSt(usertblList2);
+		List<ActivateStatistics> as3 = UsertblUtil.usertblToActivateSt(usertblList3);
+		List<ActivateStatistics> as4 = UsertblUtil.usertblToActivateSt(usertblList4);
+		if(true){
+			OutputStream os = null;
+			WritableWorkbook wwb = null;
+			try {
+				os = new FileOutputStream(fileName + ".xls");
+				wwb = Workbook.createWorkbook(os);
+				ExcelUtil.doConfigExcel(0,"已激活已上传用户", as1, "com.cmcc.monitor.base.Domain.ActivateStatistics", wwb);
+				ExcelUtil.doConfigExcel(1,"已激活未上传用户", as2, "com.cmcc.monitor.base.Domain.ActivateStatistics", wwb);
+				ExcelUtil.doConfigExcel(2,"未激活已上传用户", as3, "com.cmcc.monitor.base.Domain.ActivateStatistics", wwb);
+				ExcelUtil.doConfigExcel(3,"未激活未上传用户", as4, "com.cmcc.monitor.base.Domain.ActivateStatistics", wwb);
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error("excel导出异常！");
+			} finally {
+				try {
+					wwb.write();
+					wwb.close();
+					os.close();
+				} catch (Exception e) {
+					log.error("EXCEL导出出现流关闭异常！");
+					e.printStackTrace();
+				}
+			}
+			//设置相应信息
+			responseOutput(response, fileName);
+		}
+	}
+	
+	private void responseOutput(HttpServletResponse response, String fileName) {
+		try {
+			response.setHeader("Content-disposition", "attachment;filename=\"" + URLEncoder.encode(fileName, "UTF-8") + ".xls\"");
+			response.setContentType("application/msexcel");
+			FileInputStream fileInputStream = new FileInputStream(fileName + ".xls");
+			OutputStream out = response.getOutputStream();
+			int i = 0;
+			while ((i = fileInputStream.read()) != -1) {
+				out.write(i);
+			}
+			fileInputStream.close();
+		} catch (UnsupportedEncodingException e1) {
+			log.error("不支持的编码格式！");
+			e1.printStackTrace();
+		} catch (FileNotFoundException e) {
+			log.error("文件未找到！");
+			e.printStackTrace();
+		} catch (IOException e) {
+			log.error("EXCEL导出发现异常！");
+			e.printStackTrace();
+		}
+	}
+}

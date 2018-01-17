@@ -1,0 +1,18 @@
+package com.cmcc.mina.packet.milink.sports;
+
+import com.cmcc.mina.packet.PackageData;
+
+public final class ConfigPacket extends PackageData {
+	private boolean configReq;//是否是配置请求报文
+	public ConfigPacket(){
+		this.name="sports";
+		this.type="config";
+	}
+	public boolean isConfigReq() {
+		return configReq;
+	}
+	public void setConfigReq(boolean configReq) {
+		this.configReq = configReq;
+	}
+
+}

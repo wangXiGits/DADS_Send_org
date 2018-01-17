@@ -1,0 +1,130 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.PackDataService;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.LoginUserInfo;
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.monitor.base.Domain.Packagedata;
+
+@Controller
+public class PackDataControl extends BaseController{
+	private static Logger log = Logger.getLogger(PackDataControl.class);	
+	@Autowired
+	private PackDataService packDataService;
+	/**
+	 * 数据发送状态检测
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value="/checkDataSendFlagStatus.json")
+	public void checkDataSendFlagStatus(HttpServletRequest request,HttpServletResponse response){
+		log.info("begin call checkDataSendFlagStatus...");
+		JSONObject result = new JSONObject();
+		String dt = DateUtil.addMinutes(DateUtil.getCurrentTime(),Integer.parseInt(PropertiesReader.getProp("addMinutes")));
+		String flagName = PropertiesReader.getProp("flagName");
+		String sql = "select count(1) from packagedata where receiveTime < '"+dt+"' and "+flagName+"='0'"	;
+		int num = C3P0Util.getCount(sql);
+		if(num==0){
+			result.put("status", "success");
+		}else{
+			result.put("status", "failure");
+				response.setStatus(Integer.parseInt(PropertiesReader.getProp("statusCode")));
+		}
+		log.info("end call checkDataSendFlagStatus. num="+num);
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 运维数据流转
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value="/getPackageData.json",params={"param"})
+	public void getPackageData(HttpServletRequest request,HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("param").toString();
+		JSONObject json = JSONObject.fromObject(param);
+		String phone = "";
+		String queryDate = "";
+		String apptype = "";
+		String type = "";
+		String data = null;
+		if(json.containsKey("phone") && json.containsKey("queryDate")
+		&& json.containsKey("apptype") && json.containsKey("type")){
+			phone = json.getString("phone");
+			queryDate = json.getString("queryDate");
+			type = json.getString("type");
+			apptype = json.getString("apptype");
+			if("ws".equalsIgnoreCase(apptype)){
+				data = packDataService.getPackagedataForMT(phone,queryDate,type);
+			}else{
+				data = "[]";
+			}
+			result.put("status", "success");
+			result.put("data", data);
+		}else{
+			result.put("status", "failure");
+		}
+		log.info("运维人员调取数据：phone="+phone+" queryDate="+queryDate+" type="+type+" apptype="+apptype);
+		log.info(data);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/getPacks.json",params={"data"})
+	public void findAllPack(HttpServletRequest request,HttpServletResponse response){
+		
+		String param = request.getParameter("data").toString();
+		JSONObject map = JSONObject.fromObject(param);
+		List<Packagedata> list = packDataService.getPacksByCondition(map);
+		JSONArray result = JSONArray.fromObject(list);
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"查看数据包");
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/deletePacks.json",params={"data"})
+	public void deletePack(HttpServletRequest request,HttpServletResponse response)
+	{
+		String param = request.getParameter("data").toString();
+		JSONArray array = JSONArray.fromObject(param);
+		JSONObject result = new JSONObject();
+		result.put("status", this.packDataService.deletePacks(array));
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"删除数据包，包编号为:"+array);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/reSendPacks.json",params={"data"})
+	public void reSendPack(HttpServletRequest request,HttpServletResponse response)
+	{
+		String param = request.getParameter("data").toString();
+		JSONArray array = JSONArray.fromObject(param);
+		JSONObject result = new JSONObject();
+		result.put("status", this.packDataService.reSendPacks(array));
+		log.info(LoginUserInfo.getCurrentUserInfo(request)+"重发数据包，包编号为:"+array);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/updateORSavePack.json",params={"data"})
+	public void updateOrSavePack(HttpServletRequest request,HttpServletResponse response)
+	{
+		String param = request.getParameter("data").toString();
+		JSONObject map = JSONObject.fromObject(param);
+		JSONObject result = new JSONObject();
+		result.put("status", map.containsKey("id")?this.packDataService.updatePack(map):this.packDataService.addPack(map));
+		if(map.containsKey("id")){
+			log.info(LoginUserInfo.getCurrentUserInfo(request)+"更新数据包编号:"+map.get("id"));
+		}else{
+			log.info(LoginUserInfo.getCurrentUserInfo(request)+"新增数据包");
+		}
+        
+		this.writeToClient(response, result);
+	}
+}

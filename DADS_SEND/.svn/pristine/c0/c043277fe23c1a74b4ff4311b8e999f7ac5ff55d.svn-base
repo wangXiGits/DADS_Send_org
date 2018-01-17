@@ -1,0 +1,21 @@
+package com.cmcc.monitor.Service;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.Datatype;
+
+
+
+public interface DatatypeService {
+	public void insert(Datatype entity);
+
+	public void update(Datatype entity);
+
+	public void delete(int id);
+	
+	public Datatype findById(int id);
+	
+	public List<Datatype> findScrollPage(final int page,final int pagesize,final String condition);
+	
+	public int getCount();
+}

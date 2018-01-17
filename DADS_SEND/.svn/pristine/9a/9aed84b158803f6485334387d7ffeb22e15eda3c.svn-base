@@ -1,0 +1,129 @@
+package com.cmcc.monitor.base.Controller;
+
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.UserService;
+import com.cmcc.monitor.Util.MD5Util;
+import com.cmcc.monitor.base.Domain.User;
+
+@Controller
+@RequestMapping("/account.json")
+public class UserBaseController {
+	@Autowired
+	private UserService userService;
+	Logger log = Logger.getLogger(this.getClass());
+	/**
+	 * 用户登录
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws Exception 
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(params = "info=login")
+	public void userLoginController(HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		response.setContentType("text/html;charset=utf-8");
+		String userEmail=request.getParameter("userEmail");
+		String password=request.getParameter("password");
+		log.info("用户  "+userEmail+" 请求登录平台"+",IP:"+request.getRemoteAddr());
+		Writer pw=response.getWriter();
+		Map map = new HashMap();
+		List<User> userList = userService.findScrollPage(1, 1, " where o.name='"+userEmail+"' and o.password='"+MD5Util.getMD5(password)+"'");
+		if(userList!=null&&userList.size()>0){
+			User user = userList.get(0);
+			map.put("info", true);
+			Map userMap = new HashMap();
+			userMap.put("name", user.getRealname());
+			userMap.put("appType", user.getApptype());
+			userMap.put("loginName",user.getName() );
+			userMap.put("id",user.getId());
+			String version = request.getSession().getServletContext().getInitParameter("version");
+			String releaseTime = request.getSession().getServletContext().getInitParameter("releaseTime");
+			userMap.put("version", version);
+			map.put("userInfo", userMap);
+			request.getSession().setAttribute("userInfo", userMap);
+			request.getSession().setAttribute("appType", user.getApptype());
+			log.debug("登录成功！用户名： "+userEmail+", IP : "+request.getRemoteAddr());
+			//***************读取web.xml中的全局参数************************
+			System.out.println("version: "+version+" releaseTime: "+releaseTime);
+
+		}else{
+			map.put("info", false);
+			log.info("登录失败，密码错误");
+		}
+		
+		pw.write(JSONObject.fromObject(map).toString());
+		pw.flush();
+		pw.close();
+	}
+	
+	@RequestMapping(params = "info=loginOut")
+	public void userLoginOutController(HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		log.info("用户 "+request.getSession().getAttribute("userInfo")+" 成功退出系统"+", IP : "+request.getRemoteAddr());
+		request.getSession().removeAttribute("userInfo");
+		response.setContentType("text/html;charset=utf-8");
+		request.getSession().setAttribute("userInfo", null);
+		Writer pw=response.getWriter();
+		Map map = new HashMap();
+		map.put("info", true);
+		pw.write(JSONObject.fromObject(map).toString());
+		pw.flush();
+		pw.close();
+	}
+	
+	@RequestMapping(params = "info=getSession")
+	public void checkSession(HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		response.setContentType("text/html;charset=utf-8");
+		String userInfo = JSONObject.fromObject(request.getSession().getAttribute("userInfo")).toString();
+		response.getWriter().write(userInfo);
+		response.getWriter().flush();
+		response.getWriter().close();
+	}
+	
+	@RequestMapping(params = "info=changePwd")
+	public void changePwds(HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		Map userMap = (Map)request.getSession().getAttribute("userInfo");
+		if (userMap == null) {
+			response.getWriter().write("");
+			response.getWriter().flush();
+			response.getWriter().close();
+			return;
+		}
+		response.setContentType("text/html;charset=utf-8");
+		String username=userMap.get("loginName").toString();
+		String password=request.getParameter("password");
+		String newpassword=request.getParameter("newpassword");
+		List<User> userList = userService.findScrollPage(1, 1, " where o.name='"+username+"' and o.password='"+MD5Util.getMD5(password)+"'");
+		String status = "";
+		if(userList!=null && userList.size() != 0){
+			User user = userList.get(0);
+			user.setPassword(MD5Util.getMD5(newpassword));
+			userService.update(user);
+			status = "success";
+		}else{
+			status = "fail";
+		}
+		Map map = new HashMap();
+		map.put("status", status);
+		response.getWriter().write(JSONObject.fromObject(map).toString());
+		response.getWriter().flush();
+		response.getWriter().close();
+	}
+}

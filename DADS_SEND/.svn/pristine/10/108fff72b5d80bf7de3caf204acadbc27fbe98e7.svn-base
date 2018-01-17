@@ -1,0 +1,89 @@
+package com.cmcc.Util;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+
+import com.cmcc.monitor.Util.PropertiesReader;
+
+public class initDatatype {
+	private static String address = PropertiesReader.getProp("testUrl");
+
+	public static void main(String[] args) {
+		String value[] = {
+				"{'desc':'详细步数','name':'stepDetail','tableName':'sports'}",
+				"{'desc':'有效步数','name':'stepEffective','tableName':'sports'}",
+				"{'desc':'简要步数','name':'stepCount','tableName':'sports'}",
+				"{'desc':'睡眠','name':'sleep','tableName':'sleep'}",
+				"{'desc':'心功','name':'heartFunction','tableName':'heartfunction'}",
+				"{'desc':'日常运动','name':'dailyExercise','tableName':'dailyexercise'}",
+				"{'desc':'血压','name':'bloodPressure','tableName':'bloodpressure'}",
+				"{'desc':'血糖','name':'bloodGlucose','tableName':'bloodglucose'}",
+				"{'desc':'心电','name':'ECG','tableName':'ecgdata'}",
+				"{'desc':'体重','name':'weight','tableName':'weight'}",
+				"{'desc':'血氧','name':'SPO2','tableName':'spo2'}" };
+		for (int i = 0; i < value.length; i++) {
+			boolean gwPushResult = httpClientPost(address
+					+ "/saveDatatype.json", "data", value[i]);
+			System.out.println(i+" : "+gwPushResult);
+		}
+	}
+
+	/**
+	 * 发送post请求推送数据，根据响应结果判断发送成功和失败
+	 * 
+	 * @param url
+	 * @param pairKey
+	 * @param jsono
+	 * @return boolean
+	 */
+	public static boolean httpClientPost(String url, String pairKey,
+			String value) {
+		boolean gwPushResult = false;
+		StringBuilder responseString = new StringBuilder();
+		HttpClient client = new HttpClient();
+		// 设置连接超时时间
+		client.getHttpConnectionManager().getParams()
+				.setConnectionTimeout(5000);
+		// 设置响应超时时间
+		client.getHttpConnectionManager().getParams().setSoTimeout(15000);
+		PostMethod postM = null;
+		try {
+			postM = new PostMethod(url);
+			// postM.addParameter(new NameValuePair(pairKey, value));
+			postM.getParams().setParameter(
+					HttpMethodParams.HTTP_CONTENT_CHARSET, "utf-8");
+			postM.setParameter(pairKey, value);
+			int s = client.executeMethod(postM);
+			System.out.println("s=" + s);
+			System.out.println(postM.getStatusLine());
+			Reader reader = new InputStreamReader(
+					postM.getResponseBodyAsStream(), "utf8");
+			BufferedReader br = new BufferedReader(reader);
+			String line = "";
+			while (null != (line = br.readLine())) {
+				responseString.append(line);
+			}
+			System.out.println(responseString);
+			JSONObject jo = JSONObject.fromObject(responseString.toString());
+			if ("success".equalsIgnoreCase(jo.getString("status"))) {
+				gwPushResult = true;
+			}
+		} catch (Exception e) {
+			gwPushResult = false;
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			if(postM!=null)
+			postM.releaseConnection();
+			System.out.println("release..");
+		}
+		return gwPushResult;
+	}
+}

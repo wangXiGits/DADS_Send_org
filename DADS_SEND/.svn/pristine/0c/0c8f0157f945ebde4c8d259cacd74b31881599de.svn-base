@@ -1,0 +1,134 @@
+package com.cmcc.monitor.base.Domain;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Datastatistics entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "datastatistics")
+public class Datastatistics implements java.io.Serializable {
+
+	// Fields
+
+	private Integer id;
+	private String company;
+	private String date;
+	private Integer exceptionNum;
+	private Integer receiveNum;
+	private Integer sendNum;
+	private Integer zeroValueNum;
+	private String statisticsTime;
+	private String time;
+
+	// Constructors
+
+	/** default constructor */
+	public Datastatistics() {
+	}
+
+	/** full constructor */
+	public Datastatistics(String company, String date, Integer exceptionNum,
+			Integer receiveNum, Integer sendNum, Integer zeroValueNum,
+			String statisticsTime, String time) {
+		this.company = company;
+		this.date = date;
+		this.exceptionNum = exceptionNum;
+		this.receiveNum = receiveNum;
+		this.sendNum = sendNum;
+		this.zeroValueNum = zeroValueNum;
+		this.statisticsTime = statisticsTime;
+		this.time = time;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@Column(name = "company", length = 20)
+	public String getCompany() {
+		return this.company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	@Column(name = "date", length = 20)
+	public String getDate() {
+		return this.date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	@Column(name = "exceptionNum")
+	public Integer getExceptionNum() {
+		return this.exceptionNum;
+	}
+
+	public void setExceptionNum(Integer exceptionNum) {
+		this.exceptionNum = exceptionNum;
+	}
+
+	@Column(name = "receiveNum")
+	public Integer getReceiveNum() {
+		return this.receiveNum;
+	}
+
+	public void setReceiveNum(Integer receiveNum) {
+		this.receiveNum = receiveNum;
+	}
+
+	@Column(name = "sendNum")
+	public Integer getSendNum() {
+		return this.sendNum;
+	}
+
+	public void setSendNum(Integer sendNum) {
+		this.sendNum = sendNum;
+	}
+
+	@Column(name = "zeroValueNum")
+	public Integer getZeroValueNum() {
+		return this.zeroValueNum;
+	}
+
+	public void setZeroValueNum(Integer zeroValueNum) {
+		this.zeroValueNum = zeroValueNum;
+	}
+
+	@Column(name = "statisticsTime", length = 20)
+	public String getStatisticsTime() {
+		return this.statisticsTime;
+	}
+
+	public void setStatisticsTime(String statisticsTime) {
+		this.statisticsTime = statisticsTime;
+	}
+
+	@Column(name = "time", length = 20)
+	public String getTime() {
+		return this.time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+}

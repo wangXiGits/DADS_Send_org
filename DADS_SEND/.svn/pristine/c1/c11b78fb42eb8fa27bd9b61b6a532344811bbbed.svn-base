@@ -1,0 +1,40 @@
+package com.cmcc.mina.component.jiays.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.jiays.LogoutPacket;
+
+/**
+ * 佳医宝退出包
+ * 项目名称：MinaGateWay   
+ * 类名称：LogoutParer   
+ * 类描述：暂无 
+ * 创建人：RCM
+ * 创建时间：2014-4-21 下午07:10:57   
+ * 修改人：
+ * 修改时间：
+ * 修改备注： 
+ * @version
+ */
+public class LogoutParer extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		if(buffer.get(8)==2 && buffer.get(9)==1)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		LogoutPacket packet = new LogoutPacket();
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return packet;
+	}
+
+}

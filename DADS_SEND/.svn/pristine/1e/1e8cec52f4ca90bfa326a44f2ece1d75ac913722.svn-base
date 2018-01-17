@@ -1,0 +1,184 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.test.SimulateDataTest;
+import com.cmcc.send.observer.impl.SubjectFactory;
+
+@Controller
+public class SAController extends BaseController{
+	private static Logger log = Logger.getLogger(SAController.class);
+	/**
+	 * 启动发送线程
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value="/startSendThread.json")
+	public void startSendThread(HttpServletRequest request,HttpServletResponse response)
+	{
+		JSONObject result=new JSONObject();                                                             
+		String sql="SELECT p.appName,d.dataTypeName FROM product p JOIN product_datatype pd ON p.appID=pd.productID JOIN datatype d ON pd.dataTypeID=d.datatypeID WHERE pd.toggle='on'"; 
+		try {
+			List<HashMap<String, String>> list = C3P0Util.getData(sql);
+			String appType;
+			String dataType;
+			if(list == null || list.size()==0){
+				result.put("info", "并未启动发送线程");
+			}else{
+				for (HashMap<String, String> map : list) {
+					appType = map.get("appName");
+					dataType = map.get("dataTypeName");
+					SubjectFactory.getSubject(appType, dataType).notifyObserver();
+				}
+				result.put("info", "启动发送线程 ,发送时间："+DateUtil.getCurrentTime());
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result.put("info", "启动发送线程 失败");
+		}
+		log.info(result);
+		writeToClient(response,result);
+	}
+	/**
+	 * 发送测试数据
+	 * @param request
+	 * @param response
+	*/
+	@RequestMapping(value="/sendData.json")
+	public void sendData(HttpServletRequest request,HttpServletResponse response)
+	{
+		log.info("开始发送测试数据！");
+		SimulateDataTest sender = new SimulateDataTest();
+		String dataType = request.getParameter("dataType");
+		String date = request.getParameter("date");
+		String deviceId = request.getParameter("deviceId");
+		log.info("dataType:"+dataType+" date:"+date+" deviceId:"+deviceId);
+		String result = "";
+		if(date==null || "".equals(date)){
+			date = DateUtil.getToday();
+		}
+		if(deviceId!=null && !"".equals(deviceId)){
+			sender.setDeviceId(deviceId);
+			log.info("更换设备号为："+deviceId);
+		}
+		if(dataType==null || "".equals(dataType)){
+			result = "数据类型不能为空";
+			log.info(result);
+			writeToClient(response,result);
+			return;
+		}else if("ALL".equals(dataType)){
+			sendBP(sender, date);
+			sendBS(sender, date);
+			sendDE(sender, date);
+			sendECG(sender, date);
+			sendHF(sender, date);
+			sendSleep(sender, date);
+			sendSPO2(sender, date);
+			sendWeight(sender, date);
+			sendSports(sender, date);
+		}else{
+			if(Constants.DATATYPE_BLOODPRESSURE.equals(dataType)){
+				sendBP(sender, date);
+			}
+			if(Constants.DATATYPE_BLOODGLUCOSE.equals(dataType)){
+				sendBS(sender, date);
+			}
+			if(Constants.DATATYPE_DAILYEXERCISE.equals(dataType)){
+				sendDE(sender, date);
+			}
+			if(Constants.DATATYPE_ECG.equals(dataType)){
+				sendECG(sender, date);
+			}
+			if(Constants.DATATYPE_HEARTFUNCTION.equals(dataType)){
+				sendHF(sender, date);
+			}
+			if(Constants.DATATYPE_SLEEP.equals(dataType)){
+				sendSleep(sender, date);
+			}
+			if(Constants.DATATYPE_SPO2.equals(dataType)){
+				sendSPO2(sender, date);
+			}
+			if(Constants.DATATYPE_WEIGHT.equals(dataType)){
+				sendWeight(sender, date);
+			}
+			if("sports".equals(dataType)){
+				sendSports(sender, date);
+			}
+		}
+		result = dataType+" "+date+" 测试数据发送完成！发送时间："+DateUtil.getCurrentTime();
+		log.info(result);
+		writeToClient(response,result);
+	}
+	private void sendSports(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		sender.setMeasureTime(measureTime);
+		sender.sports();
+	}
+	private void sendWeight(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		for (int i = 0; i < 3; i++) {
+			sender.setMeasureTime(measureTime);
+			sender.weightdata();
+			measureTime = DateUtil.addHour(measureTime, 5);
+		}
+	}
+	private void sendSPO2(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		for (int i = 0; i < 6; i++) {
+			sender.setMeasureTime(measureTime);
+			sender.spo2data();
+			measureTime = DateUtil.addHour(measureTime, 2);
+		}
+	}
+	private void sendSleep(SimulateDataTest sender, String date) {
+		String measureTime = date+" 00:00:00";
+		sender.setMeasureTime(measureTime);
+		sender.sleepdata();
+	}
+	private void sendHF(SimulateDataTest sender, String date) {
+		String measureTime = date+" 00:00:00";
+		sender.setMeasureTime(measureTime);
+		sender.heartfunctiondata();
+	}
+	private void sendECG(SimulateDataTest sender, String date) {
+		String measureTime = date+" 00:00:00";
+		sender.setMeasureTime(measureTime);
+		sender.ecgdata();
+	}
+	private void sendDE(SimulateDataTest sender, String date) {
+		String measureTime = date+" 00:00:00";
+		sender.setMeasureTime(measureTime);
+		sender.dailyExerciseData();
+	}
+	private void sendBS(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		for (int i = 0; i < 3; i++) {
+			sender.setMeasureTime(measureTime);
+			sender.Beforebloodglucosedata();
+			sender.Afterbloodglucosedata();
+			measureTime = DateUtil.addHour(measureTime, 5);
+		}
+	}
+	private void sendBP(SimulateDataTest sender, String date) {
+		String measureTime = date+" 08:00:00";
+		for (int i = 0; i < 6; i++) {
+			sender.setMeasureTime(measureTime);
+			sender.bloodpressuredata();
+			measureTime = DateUtil.addHour(measureTime, 2);
+		}
+	}
+}

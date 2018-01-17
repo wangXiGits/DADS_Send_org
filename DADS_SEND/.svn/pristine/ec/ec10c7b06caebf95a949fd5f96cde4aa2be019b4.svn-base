@@ -1,0 +1,78 @@
+package com.cmcc.monitor.task;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TimerTask;
+
+import net.sf.json.JSONObject;
+
+import com.cmcc.activeMQ.CommonMsgPublisher;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Log;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+
+public class WSXHHDataSendTask extends TimerTask{
+	
+	private CommonMsgPublisher commonMsgPublisher;
+	private String baseQuerySql = PropertiesReader.getProp("wsxhhBaseQuerySql");
+	private String baseUpdateSql = PropertiesReader.getProp("wsxhhBaseUpdateSql");
+	private String querySql = null;
+	private List<HashMap<String,String>> unSendList = null;
+	private Iterator<HashMap<String,String>> iterator = null;
+	private HashMap<String,String> map = null;
+	private JSONObject data = null;
+	private String updateSql = null;
+	private String[] tableNameList = PropertiesReader.getProp("wsxhhTableList").split(",");
+	@Override
+	public void run() {
+		for(String tableName:tableNameList){
+			if("on".equals(PropertiesReader.getProp("mq_"+tableName))){
+				//查询未发送的数据
+				querySql = String.format(baseQuerySql, tableName);
+				unSendList = C3P0Util.getData(querySql);
+				sendData(tableName);
+			}
+		}
+	}
+
+	private void sendData(String tableName) {
+		Log.info(tableName+" running... query not send data sql is "+querySql);
+		iterator = unSendList.iterator();
+		while(iterator.hasNext())
+		{
+			map = iterator.next();
+			if(map!=null)
+			{
+				data = new JSONObject();
+				data.put("appType", map.get("appType"));
+				data.put("dataType", map.get("dataType"));
+				data.put("collectDate", map.get("receiveTime"));
+				data.put("phone", map.get("phone"));
+				data.put("dataValue", map.get("dataValue"));
+				
+				if(commonMsgPublisher.sendByQuene(data.toString(), PropertiesReader.getProp("jms.queue.txQUEUE")))
+				{
+					updateSql = String.format(baseUpdateSql, tableName, map.get("id"));
+				    boolean rebool = C3P0Util.executeUpdate(updateSql);
+				    if(rebool)
+				    	Log.info(tableName+" send data successfully,and update "+tableName+" successed.The sql is \r\n"+updateSql);   
+				    else
+				    	Log.info(tableName+" send data successfully,and update "+tableName+" failed.The sql is \r\n"+updateSql);
+				}else{
+				    Log.info(tableName+" send data failure");
+				}
+			}
+		}
+	}
+
+	public CommonMsgPublisher getCommonMsgPublisher() {
+		return commonMsgPublisher;
+	}
+
+	public void setCommonMsgPublisher(CommonMsgPublisher commonMsgPublisher) {
+		this.commonMsgPublisher = commonMsgPublisher;
+	}
+
+}

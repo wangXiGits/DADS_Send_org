@@ -1,0 +1,14 @@
+package com.cmcc.mina.packet.milink.sports;
+
+import com.cmcc.mina.packet.PackageData;
+
+public final class LoginPacket extends PackageData {
+
+	private String loginTime = "";
+	public String getLoginTime() {
+		return loginTime;
+	}
+	public void setLoginTime(String loginTime) {
+		this.loginTime = loginTime;
+	}
+}

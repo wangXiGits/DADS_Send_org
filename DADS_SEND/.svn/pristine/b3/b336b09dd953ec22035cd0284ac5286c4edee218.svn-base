@@ -1,0 +1,90 @@
+package com.cmcc.mina.packet.jiays;
+
+import com.cmcc.mina.packet.PackageData;
+
+public class No8SportsPacket extends PackageData {
+	private String CarFuncStartTime;		
+	private String CarFuncEndTime;	
+	private String carFuncStratHR;
+	private String carFuncEndHR;
+	private String hfSteps;//心功能运动步数	
+	private String measureTime;
+	private String getUpTime;
+	private String goBedTime;
+	private String dailyActivitySteps;
+	private String activityType;
+	private boolean hasHeartFunction;//是否有心功能运动
+	public No8SportsPacket(){
+		this.name = "jiays";
+		this.type = "Sports";
+	}
+	public String getCarFuncStartTime() {
+		return CarFuncStartTime;
+	}
+	public void setCarFuncStartTime(String carFuncStartTime) {
+		CarFuncStartTime = carFuncStartTime;
+	}
+	public String getCarFuncEndTime() {
+		return CarFuncEndTime;
+	}
+	public void setCarFuncEndTime(String carFuncEndTime) {
+		CarFuncEndTime = carFuncEndTime;
+	}
+	public String getCarFuncStratHR() {
+		return carFuncStratHR;
+	}
+	public void setCarFuncStratHR(String carFuncStratHR) {
+		this.carFuncStratHR = carFuncStratHR;
+	}
+	public String getCarFuncEndHR() {
+		return carFuncEndHR;
+	}
+	public void setCarFuncEndHR(String carFuncEndHR) {
+		this.carFuncEndHR = carFuncEndHR;
+	}
+	public String getMeasureTime() {
+		return measureTime;
+	}
+	public void setMeasureTime(String measureTime) {
+		this.measureTime = measureTime;
+	}
+	public String getGetUpTime() {
+		return getUpTime;
+	}
+	public void setGetUpTime(String getUpTime) {
+		this.getUpTime = getUpTime;
+	}
+	public String getGoBedTime() {
+		return goBedTime;
+	}
+	public void setGoBedTime(String goBedTime) {
+		this.goBedTime = goBedTime;
+	}
+	public String getDailyActivitySteps() {
+		return dailyActivitySteps;
+	}
+	public void setDailyActivitySteps(String dailyActivitySteps) {
+		this.dailyActivitySteps = dailyActivitySteps;
+	}
+	public String getActivityType() {
+		return activityType;
+	}
+	public void setActivityType(String activityType) {
+		this.activityType = activityType;
+	}
+	public String getHfSteps() {
+		return hfSteps;
+	}
+	public void setHfSteps(String hfSteps) {
+		this.hfSteps = hfSteps;
+	}
+	public boolean isHasHeartFunction() {
+		return hasHeartFunction;
+	}
+	public void setHasHeartFunction(boolean hasHeartFunction) {
+		this.hasHeartFunction = hasHeartFunction;
+	}
+
+	
+
+}

@@ -1,0 +1,73 @@
+package com.cmcc.Util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+
+import com.cmcc.monitor.Util.DateUtil;
+
+public class DataSimulatorUtil {
+	public static void main(String[] args) {
+		System.out.println(getSleepData("001122",DateUtil.getCurrentTime()).toString());
+	}
+	public static String getSleepData(String deviceId,String measureTime){
+		
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("appType", "WSSM");
+		map.put("dataType", "sleep");
+		map.put("collectDate", measureTime);
+		map.put("deviceId", deviceId);
+		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+		Map<String,Object> map1 = new HashMap<String,Object>();
+		map1.put("measureTime", measureTime);
+		list.add(map1);
+		Map<String,Object> map2 = new HashMap<String,Object>();
+		map2.put("sleepTime", "10");
+		list.add(map2);
+		Map<String,Object> map3 = new HashMap<String,Object>();
+		map3.put("efficiency", "900");
+		list.add(map3);
+		Map<String,Object> map4 = new HashMap<String,Object>();
+		map4.put("apneaTimes", "30");
+		list.add(map4);
+		Map<String,Object> map5 = new HashMap<String,Object>();
+		map5.put("smjd", "450,60,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,1,1,1,0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2");
+		list.add(map5);
+		Map<String,Object> map6 = new HashMap<String,Object>();
+		map6.put("smzt", "450,60,2,2,2,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,7,7,7,5,5,5,5,5,5,5,5,5,5,5,5,5,7,7,7,7,7,7,7,7,7,7,7,7,7,5,5,5,5,5,5,6,6,6,6,6,2,2,7,7,7,7,7,7,7,7,7,7,7,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,7,7,7,7,7,7,7,7,7,7,7,5,5,5,5,5,5,5,5,5,5,5,5,5,5,7,7,7,7,6,6,6,6,6,6,6,6,5,6,6,6,5,5,5,6,6,6,6,6,7,7,6,5,5,5,5,5,5,5,5,7,7,7,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,7,7,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,5,5,7,7,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,2");
+		list.add(map6);
+		Map<String,Object> map7 = new HashMap<String,Object>();
+		map7.put("bedTime", "1377793000");
+		list.add(map7);
+		Map<String,Object> map8 = new HashMap<String,Object>();
+		map8.put("riseTime", "425");
+		list.add(map8);
+		Map<String,Object> map9 = new HashMap<String,Object>();
+		map9.put("rem", "363");
+		list.add(map9);
+		Map<String,Object> map10 = new HashMap<String,Object>();
+		map10.put("deep", "425");
+		list.add(map10);
+		Map<String,Object> map11 = new HashMap<String,Object>();
+		map11.put("wakeTimes", "2");
+		list.add(map11);
+		Map<String,Object> map12 = new HashMap<String,Object>();
+		map12.put("apnea", "662,28,703,28,744,16,880,22,910,24,936");
+		list.add(map12);
+		Map<String,Object> map13 = new HashMap<String,Object>();
+		map13.put("beginBedTime", "2");
+		list.add(map13);
+		Map<String,Object> map14 = new HashMap<String,Object>();
+		map14.put("endBedTime", "449");
+		list.add(map14);
+		map.put("dataValue",list);
+		Map<String, Object> root = new HashMap<String, Object>();
+		root.put("company", "cmcc");
+		root.put("password", "123");
+		root.put("data", map);
+		return JSONObject.fromObject(root).toString();
+	}
+}

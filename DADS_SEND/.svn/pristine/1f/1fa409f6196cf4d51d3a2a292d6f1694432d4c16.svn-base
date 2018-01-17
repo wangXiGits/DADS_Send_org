@@ -1,0 +1,217 @@
+/**
+ * add by rencm on 2013-11-28上午10:18:12
+ */
+package com.cmcc.monitor.api.Controller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+import com.cmcc.monitor.Util.ValidateUtil;
+
+/** 
+ * 项目名称：DADS   
+ * 类名称：SportsDataController   
+ * 类描述：暂无 
+ * 创建人：rcm   
+ * 创建时间：2013-11-28 上午10:18:12   
+ * 修改人：rcm   
+ * 修改时间：2013-11-28 上午10:18:12   
+ * 修改备注： 
+ * @version   
+ */
+@Controller
+public class SportsDataController extends BaseController{
+	private static Logger log = Logger.getLogger(SportsDataController.class);
+	/**
+	 * 详细包数据格式：datas={'company':'ds',
+	 * 					'password':'123',
+	 * 					'data':{'apptype':'ws',
+	 * 							'deviceid':'DS2013110000001',
+	 * 							'date':'2013-01-01',
+	 * 							'datatype':'STEPDETAIL',
+	 * 							'hour':'7',
+	 * 							'datavalue':[{'snp5':'0,0,11,249,201,220,81,402,179,0,0,0'},
+	 * 										 {'knp5':'0,0,0,83,77,73,21,151,67,0,0,0'},
+	 * 										 {'level2p5':'0,0,10,50,22,28,18,6,28,0,0,0'},
+	 * 										 {'level3p5':'0,0,0,98,104,90,38,204,64,0,0,0'},
+	 * 										 {'level4p5':'0,0,0,0,0,0,0,2,12,0,0,0'},
+	 * 										 {'yuanp5':'0,0,245,3554,1245,1111,0,5281,1326,0,0,0'}]}}
+	 * @param request
+	 * @param response
+	 * void
+	 */
+	@RequestMapping(method=RequestMethod.POST,value="/service/uploadSportsDatas.json",params={"datas"})
+	public void uploadSportsDatas(HttpServletRequest request,HttpServletResponse response){
+		log.info("service/uploadSportsDatas.json call begin...");
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("datas").toString();
+		log.info("datas = "+param);
+		try {
+			JSONObject map = JSONObject.fromObject(param);
+			String deviceType = map.getString("company");
+			log.info("deviceType="+deviceType);
+			JSONObject data = map.getJSONObject("data");
+			String datatype = data.getString("datatype");
+			if("STEPDETAIL".equalsIgnoreCase(datatype)){
+				handleStepDetail(data,result);
+			}else if("STEPEFFECTIVE".equalsIgnoreCase(datatype)){
+				handleStepEffective(data,result);
+			}else if("STEPCOUNT".equalsIgnoreCase(datatype)){
+				handleStepCount(data,result);
+			}else{
+				log.info("无效数据包");
+				result.put("status", "FAIL");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAIL");
+			result.put("info", "数据格式错误");
+		}
+        log.info("service/uploadSportsDatas.json call end.");
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 处理详细包
+	 * @param data
+	 * @param result
+	 * void
+	 */
+	private void handleStepDetail(JSONObject data, JSONObject result) {
+		log.info("begin call handleStepDetail...");
+		try {
+			String deviceID = data.getString("deviceid");
+			String patientID = DeviceIDResolver.searchPatientidByDeviceid(deviceID);
+			String company = DeviceIDResolver.searchCompanyByDeviceid(deviceID);
+			String date = data.getString("date");
+			String filename = date.replace("-", "")+".txt";
+			JSONObject jo = new JSONObject();
+			data.remove("apptype");
+			data.remove("deviceid");
+			data.remove("date");
+			data.put("datatype", "STEPCOUNT2");
+			jo.put("data", data);
+			String detail_data = filename+" "+patientID+" \""+jo.toString()+"\"";
+			String tablename = ValidateUtil.isValid(company)?"packagedata":"exceptiondata";
+			String sql = "insert into "+tablename+" (patientID,company,deviceID,STEP2NEWVALUE,packageNum,receiveTime) values(?,?,?,?,?,?)";
+			boolean ret = C3P0Util.insertOrUpdateData(sql, patientID,company,deviceID,detail_data,"8-2",DateUtil.getCurrentTime());
+			if(ret){
+				result.put("status", "SUCCESS");
+			}else{
+				result.put("status", "FAIL");
+			}
+			
+			log.info("end call handleStepDetail.");
+		} catch (Exception e) {
+			result.put("status", "FAIL");
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * 处理有效步数包
+	 * @param data
+	 * @param result
+	 * void
+	 */
+	private void handleStepEffective(JSONObject data, JSONObject result) {
+		log.info("begin call handleStepEffective...");
+		try {
+			String deviceID = data.getString("deviceid");
+			String patientID = DeviceIDResolver.searchPatientidByDeviceid(deviceID);
+			String company = DeviceIDResolver.searchCompanyByDeviceid(deviceID);
+			String date = data.getString("date");
+			String filename = date.replace("-", "")+".txt";
+			JSONObject jo = new JSONObject();
+			data.remove("apptype");
+			data.remove("deviceid");
+			data.remove("date");
+			data.put("datatype", "STEPCOUNT3");
+			jo.put("data", data);
+			String detail_data = filename+" "+patientID+" \""+jo.toString()+"\"";
+			String tablename = ValidateUtil.isValid(company)?"packagedata":"exceptiondata";
+			String sql = "insert into "+tablename+" (patientID,company,deviceID,STEP3NEWVALUE,packageNum,receiveTime) values(?,?,?,?,?,?)";
+			boolean ret = C3P0Util.insertOrUpdateData(sql, patientID,company,deviceID,detail_data,"8-4",DateUtil.getCurrentTime());
+			if(ret){
+				result.put("status", "SUCCESS");
+			}else{
+				result.put("status", "FAIL");
+			}
+			
+			log.info("end call handleStepEffective.");
+		} catch (Exception e) {
+			result.put("status", "FAIL");
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * {'company':'ds',
+	 * 'password':'123',
+	 * 'data':{'apptype':'ws',
+	 * 			'deviceid':'DS2013110000001',
+	 * 			'date':'2013-01-01',
+	 * 			'datatype':'STEPCOUNT',
+	 * 			'stepSum':'7000',
+	 * 			'calSum ':'70',
+	 * 			'distanceSum':'500',
+	 * 			'yxbssum':'5000',
+	 * 			'weight':'60',
+	 * 			'stride':'75',
+	 * 			'degreeOne':'7',
+	 * 			'degreeTwo':'7',
+	 * 			'degreeThree':'7',
+	 * 			'degreeFour':'7',
+	 * 			'uploadType':'0'}}
+	 * 处理简要包
+	 * @param data
+	 * @param result
+	 * void
+	 */
+	private void handleStepCount(JSONObject data, JSONObject result) {
+		log.info("begin call handleStepDetail...");
+		try {
+			String deviceID = data.getString("deviceid");
+			String patientID = DeviceIDResolver.searchPatientidByDeviceid(deviceID);
+			String company = DeviceIDResolver.searchCompanyByDeviceid(deviceID);
+			String date = data.getString("date");
+			String packageNum = (DateUtil.getToday().equals(date))?"8-3":"8-1";
+			String realTime = DateUtil.getStepdate(date);
+			StringBuffer datacontent = new StringBuffer(80);
+			datacontent.append(patientID).append(" PHR ")
+				.append(realTime).append(" ")
+				.append(String.valueOf(100)).append(" ")
+				.append(data.getString("weight")).append(" ")
+				.append(data.getString("stride")).append(" ")
+				.append(String.valueOf(Float.parseFloat(data.getString("calSum"))*10)).append(" ")
+				.append(data.getString("stepSum")).append(" ")
+				.append(data.getString("distanceSum")).append(" ")
+				.append(data.getString("degreeOne")).append(" ")
+				.append(data.getString("degreeTwo")).append(" ")
+				.append(data.getString("degreeThree")).append(" ")
+				.append(data.getString("degreeFour")).append(" ")
+				.append(data.getString("uploadType")).append(" ")
+				.append(data.getString("yxbssum"));
+			
+			String tablename = ValidateUtil.isValid(company)?"packagedata":"exceptiondata";
+			String sql = "insert into "+tablename+" (patientID,company,deviceID,data_newcontent_stepcount2,packageNum,receiveTime,totalSteps,realTime) values(?,?,?,?,?,?,?,?)";
+			boolean ret = C3P0Util.insertOrUpdateData(sql, patientID,company,deviceID,datacontent.toString(),packageNum,DateUtil.getCurrentTime(),data.getString("stepSum"),realTime);
+			if(ret){
+				result.put("status", "SUCCESS");
+			}else{
+				result.put("status", "FAIL");
+			}
+			log.info("end call handleStepDetail.");
+		} catch (Exception e) {
+			result.put("status", "FAIL");
+			e.printStackTrace();
+		}
+	}
+}

@@ -1,0 +1,73 @@
+package com.cmcc.monitor.aop;
+
+import java.io.Serializable;
+
+/**
+ * 日志类
+ */
+public class Log implements Serializable{
+	private static final long serialVersionUID = -5209175352207530987L;
+	//操作结果.success | failure
+	private String operResult ;
+	//操作名称
+	private String operName ;
+	//操作人
+	private String operator ;
+	//操作参数
+	private String operParams ;
+	//操作开始时间
+	private String operBeginTime;
+	//操作结束时间
+	private String operEndTime;
+	//结果消息
+	private String resultMsg;
+	public String getOperName() {
+		return operName;
+	}
+	public void setOperName(String operName) {
+		this.operName = operName;
+	}
+	public String getOperParams() {
+		return operParams;
+	}
+	public void setOperParams(String operParams) {
+		this.operParams = operParams;
+	}
+	public String getOperator() {
+		return operator;
+	}
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
+	public String getOperResult() {
+		return operResult;
+	}
+	public void setOperResult(String operResult) {
+		this.operResult = operResult;
+	}
+	public String getResultMsg() {
+		return resultMsg;
+	}
+	public void setResultMsg(String resultMsg) {
+		this.resultMsg = resultMsg;
+	}
+	public String getOperBeginTime() {
+		return operBeginTime;
+	}
+	public void setOperBeginTime(String operBeginTime) {
+		this.operBeginTime = operBeginTime;
+	}
+	public String getOperEndTime() {
+		return operEndTime;
+	}
+	public void setOperEndTime(String operEndTime) {
+		this.operEndTime = operEndTime;
+	}
+	@Override
+	public String toString() {
+		return "Log [operResult=" + operResult + ", operName=" + operName
+				+ ", operator=" + operator + ", operParams=" + operParams
+				+ ", operBeginTime=" + operBeginTime + ", operEndTime="
+				+ operEndTime + ", resultMsg=" + resultMsg + "]";
+	}
+}

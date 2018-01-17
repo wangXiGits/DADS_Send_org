@@ -1,0 +1,269 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.crossstore.RelatedDocument;
+/**
+ * 
+ * 项目名称：DADS   
+ * 类名称：HealthData   
+ * 类描述：Mongodb bean 
+ * 创建人：lw   
+ * 创建时间：2014-5-8 下午03:03:11   
+ * 修改人：lw   
+ * 修改时间：2014-5-8 下午03:03:11   
+ * 修改备注： 
+ * @version
+ */
+@Document
+public class HealthData implements Serializable{
+	private static final long serialVersionUID = 2341472911661590578L;
+	@Id
+	private String id;
+	private String deviceId;
+	@Indexed
+	private String phone;
+	@Indexed
+	private String appType;
+	@Indexed
+	private String dataType;
+	@Indexed
+	private String measureTime;
+	private String collectDate;
+	
+	private String locationUrl;
+	private String locationName;
+	private String locationCode;
+	@RelatedDocument
+	private PatientInfo patientInfo;
+	@RelatedDocument
+	private DeviceInfo deviceInfo;
+	
+	
+	@RelatedDocument
+	private List<Map<String, String>> dataValue;
+
+	public HealthData(String id){
+		this.id = id;
+	}
+	public HealthData(){}
+	@Override
+	public String toString() {
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("id", id);
+		map.put("deviceId", deviceId);
+		map.put("phone", phone);
+		map.put("appType", appType);
+		map.put("dataType", dataType);
+		map.put("measureTime", measureTime);
+		map.put("collectDate", collectDate);
+		map.put("locationUrl", locationUrl);
+		map.put("locationName", locationName);
+		map.put("locationCode", locationCode);
+		map.put("patientInfo", patientInfo.toString());
+		map.put("deviceInfo", deviceInfo.toString());
+		map.put("dataValue", dataValue.toString());
+		return map.toString();
+	};
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the deviceId
+	 */
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	/**
+	 * @param deviceId
+	 *            the deviceId to set
+	 */
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	/**
+	 * @return the phone
+	 */
+	public String getPhone() {
+		return phone;
+	}
+
+	/**
+	 * @param phone
+	 *            the phone to set
+	 */
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	/**
+	 * @return the appType
+	 */
+	public String getAppType() {
+		return appType;
+	}
+
+	/**
+	 * @param appType
+	 *            the appType to set
+	 */
+	public void setAppType(String appType) {
+		this.appType = appType;
+	}
+
+	/**
+	 * @return the dataType
+	 */
+	public String getDataType() {
+		return dataType;
+	}
+
+	/**
+	 * @param dataType
+	 *            the dataType to set
+	 */
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	/**
+	 * @return the collectDate
+	 */
+	public String getCollectDate() {
+		return collectDate;
+	}
+
+	/**
+	 * @param collectDate
+	 *            the collectDate to set
+	 */
+	public void setCollectDate(String collectDate) {
+		this.collectDate = collectDate;
+	}
+
+	/**
+	 * @return the locationUrl
+	 */
+	public String getLocationUrl() {
+		return locationUrl;
+	}
+
+	/**
+	 * @param locationUrl
+	 *            the locationUrl to set
+	 */
+	public void setLocationUrl(String locationUrl) {
+		this.locationUrl = locationUrl;
+	}
+
+	/**
+	 * @return the locationName
+	 */
+	public String getLocationName() {
+		return locationName;
+	}
+
+	/**
+	 * @param locationName
+	 *            the locationName to set
+	 */
+	public void setLocationName(String locationName) {
+		this.locationName = locationName;
+	}
+
+	/**
+	 * @return the locationCode
+	 */
+	public String getLocationCode() {
+		return locationCode;
+	}
+
+	/**
+	 * @param locationCode
+	 *            the locationCode to set
+	 */
+	public void setLocationCode(String locationCode) {
+		this.locationCode = locationCode;
+	}
+
+	/**
+	 * @return the measureTime
+	 */
+	public String getMeasureTime() {
+		return measureTime;
+	}
+
+	/**
+	 * @param measureTime
+	 *            the measureTime to set
+	 */
+	public void setMeasureTime(String measureTime) {
+		this.measureTime = measureTime;
+	}
+
+	/**
+	 * @return the patientInfo
+	 */
+	public PatientInfo getPatientInfo() {
+		return patientInfo;
+	}
+
+	/**
+	 * @param patientInfo
+	 *            the patientInfo to set
+	 */
+	public void setPatientInfo(PatientInfo patientInfo) {
+		this.patientInfo = patientInfo;
+	}
+
+	/**
+	 * @return the deviceInfo
+	 */
+	public DeviceInfo getDeviceInfo() {
+		return deviceInfo;
+	}
+
+	/**
+	 * @param deviceInfo
+	 *            the deviceInfo to set
+	 */
+	public void setDeviceInfo(DeviceInfo deviceInfo) {
+		this.deviceInfo = deviceInfo;
+	}
+
+	/**
+	 * @return the dataValue
+	 */
+	public List<Map<String, String>> getDataValue() {
+		return dataValue;
+	}
+
+	/**
+	 * @param dataValue
+	 *            the dataValue to set
+	 */
+	public void setDataValue(List<Map<String, String>> dataValue) {
+		this.dataValue = dataValue;
+	}
+
+}

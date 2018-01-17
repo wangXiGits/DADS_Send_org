@@ -1,0 +1,60 @@
+package com.cmcc.monitor.DaoImpl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.stereotype.Component;
+
+import com.cmcc.monitor.Dao.UserDao;
+import com.cmcc.monitor.base.Domain.User;
+@Component
+public class UserDaoImpl implements UserDao{
+	@Autowired
+    private HibernateTemplate hibernateTemplate;
+	@Override
+	public void insert(User entity) {
+		this.hibernateTemplate.save(entity);
+		
+	}
+
+	@Override
+	public void update(User entity) {
+		this.hibernateTemplate.update(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		User entity = this.findById(id);
+		this.hibernateTemplate.delete(entity);
+	}
+
+	@Override
+	public User findById(int id) {
+		return (User)this.hibernateTemplate.get(User.class,new Integer(id));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<User> findScrollPage(final int page, final int pagesize, final String condition) {
+		return (List<User>)this.hibernateTemplate.executeFind(new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException,
+					SQLException {
+				Query query=session.createQuery("from User o "+condition);
+				query.setFirstResult((page-1)*pagesize);
+				query.setMaxResults(pagesize);
+				return query.list();
+			}
+		});
+	}
+
+	@Override
+	public int getCount() {
+		return 0;
+	}
+}

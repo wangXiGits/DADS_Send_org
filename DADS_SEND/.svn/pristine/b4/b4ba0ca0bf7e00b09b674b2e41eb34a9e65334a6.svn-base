@@ -1,0 +1,58 @@
+package com.cmcc.mina.component.milink.sport.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.milink.sports.ConfigPacket;
+import com.cmcc.mina.util.DataTypeChangeHelper;
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+/**
+ * 实现配置请求包的解码
+ */
+public class ConfigParser extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		/*
+		 * buffer.get(9)==1 配置请求报文
+		 * buffer.get(9)==3 配置结果报文
+		 */
+		if(buffer.get(8)==-98 && (buffer.get(9)==1 ||buffer.get(9)==3))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		ConfigPacket data = new ConfigPacket();
+		if(buffer.get(9)==1){
+			data.setConfigReq(true);
+		}else{
+			data.setConfigReq(false);
+		}
+		//get data length
+		byte length[] = new byte[4];		
+		length[0] = buffer.get(4);
+		length[1] = buffer.get(5);
+		length[2] = buffer.get(6);
+		length[3] = buffer.get(7);
+		long lengthvalue = DataTypeChangeHelper.unsigned4BytesToInt(length,0);
+		if(lengthvalue<33){//This means old device,return 
+			Logger.writeLog("This is old device, return default ack!");
+		}else{
+			//get deviceID
+			String device_id = DeviceIDResolver.getDeviceIDFromBytes(buffer.array(), 15);
+			//get the phone value
+			String patientID = DeviceIDResolver.searchPatientidByDeviceid(device_id);
+			data.setDeviceID(device_id);
+			data.setPatientID(patientID);
+		}
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return data;
+	}
+}

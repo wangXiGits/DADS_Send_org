@@ -1,0 +1,224 @@
+package com.cmcc.monitor.base.Domain;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import static javax.persistence.GenerationType.IDENTITY;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+/**
+ * Usertbl entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "usertbl", uniqueConstraints = {
+		@UniqueConstraint(columnNames = "deviceID"),
+		@UniqueConstraint(columnNames = "ywId") })
+public class Usertbl implements java.io.Serializable {
+
+	// Fields
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3916872781377208946L;
+	private Integer id;
+	private String deviceId;
+	private String patientId;
+	private String deviceType;
+	private String appType;
+	private String deviceUseFlag;
+	private String company;
+	private String pname;
+	private String email;
+	private String teamName;
+	private String companyName;
+	private String isActivate;
+	private String lastTime;
+	private String modifyTime;
+	private String ywId;
+	private String emrFlag;
+
+	// Constructors
+
+	/** default constructor */
+	public Usertbl() {
+	}
+
+	/** minimal constructor */
+	public Usertbl(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	/** full constructor */
+	public Usertbl(String deviceId, String patientId, String deviceType,
+			String appType, String deviceUseFlag, String company, String pname,
+			String email, String teamName, String companyName,
+			String isActivate, String lastTime, String modifyTime, String ywId,
+			String emrFlag) {
+		this.deviceId = deviceId;
+		this.patientId = patientId;
+		this.deviceType = deviceType;
+		this.appType = appType;
+		this.deviceUseFlag = deviceUseFlag;
+		this.company = company;
+		this.pname = pname;
+		this.email = email;
+		this.teamName = teamName;
+		this.companyName = companyName;
+		this.isActivate = isActivate;
+		this.lastTime = lastTime;
+		this.modifyTime = modifyTime;
+		this.ywId = ywId;
+		this.emrFlag = emrFlag;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@Column(name = "deviceID", unique = true, nullable = false, length = 100)
+	public String getDeviceId() {
+		return this.deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	@Column(name = "patientID", length = 100)
+	public String getPatientId() {
+		return this.patientId;
+	}
+
+	public void setPatientId(String patientId) {
+		this.patientId = patientId;
+	}
+
+	@Column(name = "deviceType", length = 100)
+	public String getDeviceType() {
+		return this.deviceType;
+	}
+
+	public void setDeviceType(String deviceType) {
+		this.deviceType = deviceType;
+	}
+
+	@Column(name = "appType", length = 100)
+	public String getAppType() {
+		return this.appType;
+	}
+
+	public void setAppType(String appType) {
+		this.appType = appType;
+	}
+
+	@Column(name = "deviceUseFlag", length = 100)
+	public String getDeviceUseFlag() {
+		return this.deviceUseFlag;
+	}
+
+	public void setDeviceUseFlag(String deviceUseFlag) {
+		this.deviceUseFlag = deviceUseFlag;
+	}
+
+	@Column(name = "company", length = 100)
+	public String getCompany() {
+		return this.company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	@Column(name = "pname", length = 100)
+	public String getPname() {
+		return this.pname;
+	}
+
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+
+	@Column(name = "email", length = 100)
+	public String getEmail() {
+		return this.email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	@Column(name = "teamName", length = 100)
+	public String getTeamName() {
+		return this.teamName;
+	}
+
+	public void setTeamName(String teamName) {
+		this.teamName = teamName;
+	}
+
+	@Column(name = "companyName", length = 100)
+	public String getCompanyName() {
+		return this.companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	@Column(name = "isActivate", length = 10)
+	public String getIsActivate() {
+		return this.isActivate;
+	}
+
+	public void setIsActivate(String isActivate) {
+		this.isActivate = isActivate;
+	}
+
+	@Column(name = "lastTime", length = 100)
+	public String getLastTime() {
+		return this.lastTime;
+	}
+
+	public void setLastTime(String lastTime) {
+		this.lastTime = lastTime;
+	}
+
+	@Column(name = "modifyTime", length = 20)
+	public String getModifyTime() {
+		return this.modifyTime;
+	}
+
+	public void setModifyTime(String modifyTime) {
+		this.modifyTime = modifyTime;
+	}
+
+	@Column(name = "ywId", unique = true, length = 20)
+	public String getYwId() {
+		return this.ywId;
+	}
+
+	public void setYwId(String ywId) {
+		this.ywId = ywId;
+	}
+
+	@Column(name = "emr_flag", length = 1)
+	public String getEmrFlag() {
+		return this.emrFlag;
+	}
+
+	public void setEmrFlag(String emrFlag) {
+		this.emrFlag = emrFlag;
+	}
+
+}

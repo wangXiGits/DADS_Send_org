@@ -1,0 +1,25 @@
+<div header></div>
+<table>
+    <tr>
+        <td>
+            <div style="position: relative;width: 932px;margin-left: 14px">
+                <div spin style="position: absolute;top: 275px;left: 285px;width: 150px;height: 150px" ng-show="loading"></div>
+                <form class="form-horizontal" style="margin: 0 auto">
+                    <span class="help-inline">选择日期</span>
+                    <input type="text" readonly style="cursor: pointer" datetimepicker flag="date" ng-model="date"/>
+				    <div style="text-align: left;position: relative;left: 2.5px;">
+				        <span class="help-inline">数据类型</span>
+				        <select ui-select2 ng-model="dataType">
+				            <option ng-repeat="item in selectData" value="{{item}}">{{item}}</option>
+				        </select><br><br>
+				    </div>
+                    <button class="btn btn-primary btn-small" style="position: relative;left: 85px;" ng-click="send()"><i class="icon-circle-arrow-up"></i>&nbsp;&nbsp;发送</button>
+                </form>
+                <div scroll position="scroll" style="height: 635px;font-size: 14px;overflow-x: hidden;overflow-y: scroll;margin-top: 20px;margin-bottom: 20px">
+                    <div ng-repeat="item in data">{{ item }}</div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<div footer></div>

@@ -1,0 +1,144 @@
+package com.cmcc.monitor.base.Domain;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Resetrecord entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "resetrecord")
+public class Resetrecord implements java.io.Serializable {
+
+	// Fields
+
+	private Integer id;
+	private String deviceId;
+	private String company;
+	private String patientId;
+	private String pname;
+	private String receiveTime;
+	private String totalSteps;
+	private Integer packagedataId;
+	private String companyName;
+	private String teamName;
+
+	// Constructors
+
+	/** default constructor */
+	public Resetrecord() {
+	}
+
+	/** full constructor */
+	public Resetrecord(String deviceId, String company, String patientId,
+			String pname, String receiveTime, String totalSteps,
+			Integer packagedataId, String companyName, String teamName) {
+		this.deviceId = deviceId;
+		this.company = company;
+		this.patientId = patientId;
+		this.pname = pname;
+		this.receiveTime = receiveTime;
+		this.totalSteps = totalSteps;
+		this.packagedataId = packagedataId;
+		this.companyName = companyName;
+		this.teamName = teamName;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@Column(name = "deviceID", length = 50)
+	public String getDeviceId() {
+		return this.deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	@Column(name = "company", length = 50)
+	public String getCompany() {
+		return this.company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	@Column(name = "patientID", length = 50)
+	public String getPatientId() {
+		return this.patientId;
+	}
+
+	public void setPatientId(String patientId) {
+		this.patientId = patientId;
+	}
+
+	@Column(name = "pname", length = 50)
+	public String getPname() {
+		return this.pname;
+	}
+
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+
+	@Column(name = "receiveTime", length = 50)
+	public String getReceiveTime() {
+		return this.receiveTime;
+	}
+
+	public void setReceiveTime(String receiveTime) {
+		this.receiveTime = receiveTime;
+	}
+
+	@Column(name = "totalSteps", length = 50)
+	public String getTotalSteps() {
+		return this.totalSteps;
+	}
+
+	public void setTotalSteps(String totalSteps) {
+		this.totalSteps = totalSteps;
+	}
+
+	@Column(name = "packagedataID")
+	public Integer getPackagedataId() {
+		return this.packagedataId;
+	}
+
+	public void setPackagedataId(Integer packagedataId) {
+		this.packagedataId = packagedataId;
+	}
+
+	@Column(name = "companyName", length = 100)
+	public String getCompanyName() {
+		return this.companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	@Column(name = "teamName",length=100)
+	public String getTeamName() {
+		return teamName;
+	}
+
+	public void setTeamName(String teamName) {
+		this.teamName = teamName;
+	}
+
+}

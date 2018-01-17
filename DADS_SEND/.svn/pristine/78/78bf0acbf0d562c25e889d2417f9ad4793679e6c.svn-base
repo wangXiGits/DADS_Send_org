@@ -1,0 +1,192 @@
+package com.cmcc.monitor.DaoImpl;
+
+import java.util.List;
+
+
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
+
+import com.cmcc.monitor.Dao.AbstractBaseMongoTemplete;
+import com.cmcc.monitor.Dao.MongoDAO;
+import com.cmcc.monitor.base.Domain.HealthData;
+import com.cmcc.monitor.base.Domain.PatientData;
+import com.mongodb.BasicDBObject;
+@Repository
+public class MongoDAOImpl extends AbstractBaseMongoTemplete implements MongoDAO {
+	@Override
+	public void insertPatient(PatientData patientData) {
+		 long start = System.currentTimeMillis();
+		 mongoTemplate.insert(patientData);
+		 System.out.println("数据库连接耗时："+(System.currentTimeMillis()-start)+"ms");
+	}
+	/** 
+     * 新增 
+     * <br>------------------------------<br> 
+     * @param HealthData 
+     */  
+    public void insert(HealthData HealthData) {  
+        mongoTemplate.insert(HealthData);  
+    }  
+      
+    /** 
+     * 批量新增 
+     * <br>------------------------------<br> 
+     * @param HealthDatas 
+     */  
+    public void insertAll(List<HealthData> HealthDatas) {  
+        mongoTemplate.insertAll(HealthDatas);  
+    }  
+      
+    /** 
+     * 删除,按主键id, 如果主键的值为null,删除会失败 
+     * <br>------------------------------<br> 
+     * @param id 
+     */  
+    public void deleteById(String id) {  
+        HealthData HealthData = new HealthData(id);  
+        mongoTemplate.remove(HealthData);  
+    }  
+      
+    /** 
+     * 按条件删除 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     */  
+    public void delete(HealthData criteriaHealthData) {  
+        Criteria criteria = Criteria.where("phone").gt(criteriaHealthData.getPhone());;  
+        Query query = new Query(criteria);  
+        mongoTemplate.remove(query, HealthData.class);  
+    }  
+      
+    /** 
+     * 删除全部 
+     * <br>------------------------------<br> 
+     */  
+    public void deleteAll() {  
+        mongoTemplate.dropCollection(HealthData.class);  
+    }  
+      
+    /** 
+     * 按主键修改, 
+     * 如果文档中没有相关key 会新增 使用$set修改器 
+     * <br>------------------------------<br> 
+     * @param HealthData 
+     */  
+    public void updateById(HealthData HealthData) {  
+        Criteria criteria = Criteria.where("id").is(HealthData.getId());  
+        Query query = new Query(criteria);  
+        Update update = Update.update("phone", HealthData.getPhone()).set("deviceId", HealthData.getDeviceId());  
+        mongoTemplate.updateFirst(query, update, HealthData.class);  
+    }  
+      
+    /** 
+     * 修改多条 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @param HealthData 
+     */  
+    public void update(HealthData criteriaHealthData, HealthData HealthData) {  
+        Criteria criteria = Criteria.where("phone").gt(criteriaHealthData.getPhone());;  
+        Query query = new Query(criteria);  
+        Update update = Update.update("deviceId", HealthData.getDeviceId()).set("phone", HealthData.getPhone());  
+        mongoTemplate.updateMulti(query, update, HealthData.class);  
+    }  
+      
+    /** 
+     * 根据主键查询 
+     * <br>------------------------------<br> 
+     * @param id 
+     * @return 
+     */  
+    public HealthData findById(String id) {  
+        return mongoTemplate.findById(id, HealthData.class);  
+    }  
+      
+    /** 
+     * 查询全部 
+     * <br>------------------------------<br> 
+     * @return 
+     */  
+    public List<HealthData> findAll() {  
+        return mongoTemplate.findAll(HealthData.class);  
+    }  
+      
+    /** 
+     * 按条件查询, 分页 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @param skip 
+     * @param limit 
+     * @return 
+     */  
+    public List<HealthData> find(HealthData criteriaHealthData, int skip, int limit) {  
+        Query query = getQuery(criteriaHealthData);  
+        query.skip(skip);  
+        query.limit(limit);  
+        return mongoTemplate.find(query, HealthData.class);  
+    }  
+      
+    /** 
+     * 根据条件查询出来后 再去修改 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData  查询条件 
+     * @param updateHealthData    修改的值对象 
+     * @return 
+     */  
+    public HealthData findAndModify(HealthData criteriaHealthData, HealthData updateHealthData) {  
+        Query query = getQuery(criteriaHealthData);  
+        Update update = Update.update("phone", updateHealthData.getPhone()).set("deviceId", updateHealthData.getDeviceId());  
+        return mongoTemplate.findAndModify(query, update, HealthData.class);  
+    }  
+      
+    /** 
+     * 查询出来后 删除 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @return 
+     */  
+    public HealthData findAndRemove(HealthData criteriaHealthData) {  
+        Query query = getQuery(criteriaHealthData);  
+        return mongoTemplate.findAndRemove(query, HealthData.class);  
+    }  
+      
+    /** 
+     * count 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @return 
+     */  
+    public long count(HealthData criteriaHealthData) {  
+        Query query = getQuery(criteriaHealthData);  
+        return mongoTemplate.count(query, HealthData.class);  
+    }  
+  
+    /** 
+     * 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @return 
+     */  
+    private Query getQuery(HealthData criteriaHealthData) {  
+        if (criteriaHealthData == null) {  
+            criteriaHealthData = new HealthData();  
+        }  
+        Query query = new Query();  
+        if (criteriaHealthData.getId() != null) {  
+            Criteria criteria = Criteria.where("id").is(criteriaHealthData.getId());  
+            query.addCriteria(criteria);  
+        }  
+        return query;  
+    }
+
+	@Override
+	protected <T> Class getEntityClass() {
+		return HealthData.class;
+	}
+
+	
+	
+}

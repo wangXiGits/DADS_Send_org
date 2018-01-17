@@ -1,0 +1,194 @@
+<div header></div>
+<div spin style="position: absolute;top: 375px;left: 405px;width: 150px;height: 150px" ng-show="loading"></div>
+<div style="text-align: right">
+    <a class="btn btn-warning" style="margin-bottom: 20px;margin-right: 10px;" ng-click="unClock()"><i class="icon-search">&nbsp;</i>解锁</a>
+    <a class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-click="del()" ng-disabled="status"><i class="icon-search">&nbsp;</i>停用</a>
+    <a href="exportPeopleInfo.json" class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-disabled="status"><i class="icon-search">&nbsp;</i>导出</a>
+    <a class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-click="importExcel()" ng-disabled="status"><i class="icon-search">&nbsp;</i>导入</a>
+    <a class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-click="edit()" ng-disabled="status"><i class="icon-search">&nbsp;</i>修改</a>
+    <a class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-click="add()" ng-disabled="status"><i class="icon-search">&nbsp;</i>新增</a>
+    <!-- <button class="btn btn-primary" style="margin-bottom: 20px;margin-right: 10px;" ng-click="activeUser()" ng-disabled="status"><i class="icon-search">&nbsp;</i>激活同步</button> -->
+</div>
+<div style="text-align: right;margin-bottom: 10px;">
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="单位名称" ng-model="filterType.companyName" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="姓名" ng-model="filterType.pname" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="手机" ng-model="filterType.patientId" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="使用标识" ng-model="filterType.deviceUseFlag" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+    <!-- 
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="激活标识" ng-model="filterType.isActivate" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+     -->
+    <div class="input-prepend" style="margin-right: 10px;">
+        <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+        <input type="text" style="width: 100px;" autofocus placeholder="设备ID" ng-model="filterType.deviceId" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+    </div>
+</div>
+<div style="min-height: 462px;">
+    <table class="table table-striped table-bordered table-hover" ng-init="init()">
+        <tr>
+            <td style="width: 3.75%;background-color: #cde3f6;text-align: center"><input type="checkbox" style="position: relative;top: -3px;" ng-model="check" ng-click="updateCheck()"/></td>
+            <td class="td" style="width: 8.75%;background-color: #cde3f6;text-align: center">单位名称</td>
+            <td class="td" style="width: 8%;background-color: #cde3f6;text-align: center">部门</td>
+            <td class="td" style="width: 10%;background-color: #cde3f6;text-align: center">姓名</td>
+            <td class="td" style="width: 13.75%;background-color: #cde3f6;text-align: center">手机</td>
+            <td class="td" style="background-color: #cde3f6;text-align: center">邮箱</td>
+       		<td class="td" style="width: 10%;background-color: #cde3f6;text-align: center">使用标识</td>      
+       <!-- <td class="td" style="background-color: #cde3f6;text-align: center">激活标识</td>-->
+            <td class="td" style="width: 18.75%;background-color: #cde3f6;text-align: center">设备ID</td>
+        </tr>
+        <tr ng-repeat="item in data | filter: filterType" ng-show="item.show">
+            <td style="text-align: center"><input type="checkbox" ng-model="item.check"/></td>
+            <td>{{ item.companyName }}</td>
+            <td >
+                <div style="overflow: hidden;text-overflow: ellipsis;width: 75px;margin: 0 auto;">
+                    <span style="white-space: nowrap" tooltip="{{item.teamName}}">{{ item.teamName}}</span>
+                </div>
+            </td>
+            <td >{{ item.pname }}</td>
+            <td >{{ item.patientId }}</td>
+            <td >
+                <div style="overflow: hidden;text-overflow: ellipsis;width: 120px;">
+                    <span style="white-space: nowrap" tooltip="{{item.email}}">{{ item.email}}</span>
+                </div>
+            </td>
+            <td >{{ item.deviceUseFlag.replace('0', '0（未用）').replace('1', '1（已用）') }}</td>
+        <!-- <td>{{ item.isActivate.replace('0', '0（未激活）').replace('1', '1（已激活）') }}</td> -->    
+            <td >{{ item.deviceId }}</td>
+        </tr>
+    </table>
+    <span style="float: left;position: relative;top: 2px;margin-left: 10px;">
+    	提示：共<font style="color: red">{{ Data.noOfPages($eval(filterData).length) }}</font>页，
+    	共<font style="color: red">{{ $eval(filterData).length }}</font>条记录
+    </span>
+	<div style="opacity: 0" ng-show="$eval(filterData).length<=20">0</div>
+    <div style="width: 100%;text-align: right;" ng-controller="PageCtrl" ng-show="$eval(filterData).length>20">
+        <pagination num-pages="Data.noOfPages($eval(filterData).length)" current-page="currentPage" max-size="maxSize"
+                    on-select-page="Data.selectPage($eval(filterData), page)" boundary-links="true" first-text="'首页'"
+                    previous-text="'上页'" next-text="'下页'" last-text="'尾页'"></pagination>
+    </div>
+</div>
+<div footer></div>
+<div modal="modelShow" options="opts">
+    <div class="modal-header" style="text-align: center">
+        <strong ng-show="$parent.type!='add'">{{ editData.pname }}</strong>
+        <button class="close" ng-click="modelShow=false">×</button>
+    </div>
+    <div class="modal-body">
+        <div spin style="position: absolute;top: 105px;left: 290px;width: 150px;height: 150px" ng-show="loading"></div>
+        <div>
+            <form class="form-horizontal" style="margin: 0 auto;width: 655px">
+                <table style="margin: 0 auto">
+                    <tr>
+                        <td>单位代码：</td>
+                        <td><input type="text" ng-model="editData.company"/></td>
+                    </tr>
+                    <tr>
+                        <td>单位名称：</td>
+                        <td><input type="text" ng-model="editData.companyName"/></td>
+                    </tr>
+                    <tr>
+                        <td>部门：</td>
+                        <td><input type="text" ng-model="editData.teamName"/></td>
+                    </tr>
+                    <tr>
+                        <td>姓名：</td>
+                        <td><input type="text" ng-model="editData.pname"/></td>
+                    </tr>
+                    <tr>
+                        <td>手机：</td>
+                        <td><input type="text" ng-model="editData.patientId"/></td>
+                    </tr>
+                    <tr>
+                        <td>邮箱：</td>
+                        <td><input type="text" ng-model="editData.email"/></td>
+                    </tr>
+                    <tr>
+                        <td>使用标识：</td>
+                        <td><input type="text" ng-model="editData.deviceUseFlag"/></td>
+                    </tr>
+                    <tr>
+                        <td>设备ID：</td>
+                        <td><input type="text" ng-model="editData.deviceId"/></td>
+                    </tr>
+                    <tr>
+                        <td>设备类型：</td>
+                        <td><input type="text" ng-model="editData.deviceType"/></td>
+                    </tr>
+                </table>
+                <div align="center" style="margin-top: 15px;">
+                    <button class="btn btn-info" ng-click="updateData()"><i class="icon-edit"></i>&nbsp;修改</button>
+                    <button class="btn" style="margin-left: 10px;" ng-click="editReset()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div modal="modelShow2" options="opts">
+    <div class="modal-header" style="text-align: center">
+        <strong ng-show="$parent.type!='add'">新增用户</strong>
+        <button class="close" ng-click="modelShow2=false">×</button>
+    </div>
+    <div class="modal-body">
+        <div spin style="position: absolute;top: 105px;left: 290px;width: 150px;height: 150px" ng-show="loading"></div>
+        <div>
+            <form class="form-horizontal" style="margin: 0 auto;width: 655px">
+                <table style="margin: 0 auto">
+                    <tr>
+                        <td>单位代码：</td>
+                        <td><input type="text" autofocus ng-model="addData.company"/></td>
+                    </tr>
+                    <tr>
+                        <td>单位名称：</td>
+                        <td><input type="text" ng-model="addData.companyName"/></td>
+                    </tr>
+                    <tr>
+                        <td>部门：</td>
+                        <td><input type="text" ng-model="addData.teamName"/></td>
+                    </tr>
+                    <tr>
+                        <td>姓名：</td>
+                        <td><input type="text" ng-model="addData.pname"/></td>
+                    </tr>
+                    <tr>
+                        <td>手机：</td>
+                        <td><input type="text" ng-model="addData.patientId"/></td>
+                    </tr>
+                    <tr>
+                        <td>邮箱：</td>
+                        <td><input type="text" ng-model="addData.email"/></td>
+                    </tr>
+                    <tr>
+                        <td>使用标识：</td>
+                        <td><input type="text" ng-model="addData.deviceUseFlag"/></td>
+                    </tr>
+                    <tr>
+                        <td>设备ID：</td>
+                        <td><input type="text" ng-model="addData.deviceId"/></td>
+                    </tr>
+                    <tr>
+                        <td>设备类型：</td>
+                        <td><input type="text" ng-model="addData.deviceType"/></td>
+                    </tr>
+                </table>
+                <div align="center" style="margin-top: 15px;">
+                    <button class="btn btn-info" ng-click="insertData()"><i class="icon-edit"></i>&nbsp;新增</button>
+                    <button class="btn" style="margin-left: 10px;" ng-click="editReset()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

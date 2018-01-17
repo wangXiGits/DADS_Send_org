@@ -1,0 +1,65 @@
+package com.cmcc.Util;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class ReadFileUtil {
+	/**
+	 * 以行为单位读取文件，常用于读面向行的格式化文�?
+	 * @param fileName 指定的文件目�?
+	 * @return
+	 */
+    public static String readFileByLines(String fileName) {
+    	String re_str = "";
+        File file = new File(fileName);
+        if(!file.exists())
+        	return "";
+        BufferedReader reader = null;
+        try {
+        	String tempString = null;
+            reader = new BufferedReader(new FileReader(file));
+            while ((tempString = reader.readLine()) != null) {
+            	re_str += tempString;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e1) {
+				}
+            }
+        }
+        return re_str;
+    }
+    /** 
+     * 读取流 
+     *  
+     * @param inStream 
+     * @return 字节数组 
+     * @throws Exception 
+     */  
+    public static String readStream(String fileName) {  
+    	InputStream inStream = ReadFileUtil.class.getResourceAsStream(fileName);
+        ByteArrayOutputStream outSteam = null;
+		try {
+			outSteam = new ByteArrayOutputStream();  
+			byte[] buffer = new byte[1024];  
+			int len = -1;  
+			while ((len = inStream.read(buffer)) != -1) {  
+			    outSteam.write(buffer, 0, len);  
+			}  
+			outSteam.close();  
+			inStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}  
+        return new String(outSteam.toByteArray());  
+    }
+}

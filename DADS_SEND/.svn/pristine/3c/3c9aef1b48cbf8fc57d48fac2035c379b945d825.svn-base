@@ -1,0 +1,97 @@
+package com.cmcc.monitor.base.Domain;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import static javax.persistence.GenerationType.IDENTITY;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+/**
+ * ProductDatatype entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "product_datatype")
+public class ProductDatatype implements java.io.Serializable {
+
+	// Fields
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8211458914537776515L;
+	private Integer id;
+	private Datatype datatype;
+	private Product product;
+	private String toggle;
+	private String updatetTime;
+
+	// Constructors
+
+	/** default constructor */
+	public ProductDatatype() {
+	}
+
+	/** full constructor */
+	public ProductDatatype(Datatype datatype, Product product, String toggle,
+			String updatetTime) {
+		this.datatype = datatype;
+		this.product = product;
+		this.toggle = toggle;
+		this.updatetTime = updatetTime;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "dataTypeID")
+	public Datatype getDatatype() {
+		return this.datatype;
+	}
+
+	public void setDatatype(Datatype datatype) {
+		this.datatype = datatype;
+	}
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "productID")
+	public Product getProduct() {
+		return this.product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
+
+	@Column(name = "toggle", length = 20)
+	public String getToggle() {
+		return this.toggle;
+	}
+
+	public void setToggle(String toggle) {
+		this.toggle = toggle;
+	}
+
+	@Column(name = "updatetTime", length = 20)
+	public String getUpdatetTime() {
+		return this.updatetTime;
+	}
+
+	public void setUpdatetTime(String updatetTime) {
+		this.updatetTime = updatetTime;
+	}
+
+}

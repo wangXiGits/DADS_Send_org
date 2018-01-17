@@ -1,0 +1,130 @@
+package com.cmcc.mina.component.jiays.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.jiays.No8SportsPacket;
+import com.cmcc.mina.util.ByteUtil;
+import com.cmcc.monitor.Util.DateUtil;
+
+/** 
+ * 血压计登录包
+ * 项目名称：MinaGateWay   
+ * 类名称：BPNo1LoginParer   
+ * 类描述：暂无 
+ * 创建人：rcm   
+ * 创建时间：2013-11-26 上午10:55:40   
+ * 修改人：rcm   
+ * 修改时间：2013-11-26 上午10:55:40   
+ * 修改备注： 
+ * @version   
+ */
+public class No8SportsParer extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		if(buffer.get(8)==8 && buffer.get(9)==1){
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info("收到计步器的8号包数据：");
+		//1.收到8号包数据的日常运动数据
+		int bp_type=0;//描述是否有心功能数据；
+		No8SportsPacket data = new No8SportsPacket();
+		getExDataFromN08(buffer, data);
+		//2.收到8号包的心功能数据
+		getCarFuncData(buffer, data);
+		log.info(this.getClass().getSimpleName()+"No8SportsParer.generateRealPackageData() end.");
+		return data;
+	}
+
+	private void getExDataFromN08(IoBuffer buffer, No8SportsPacket data) {
+		//year的解析
+		int year = buffer.get(13);
+		int month = buffer.get(12);
+		int day = buffer.get(11);
+		log.info(year+"年"+month+"月"+day+"日");
+		
+		int getUpMin= buffer.get(22);
+		int getupHour = buffer.get(23);
+		int sleepMin=buffer.get(24);
+		int sleepHour=buffer.get(25);
+		
+		String sGetUpTime = DateUtil.getTime(getupHour, getUpMin);
+		data.setGetUpTime(sGetUpTime);
+		log.info("起床时间:"+sGetUpTime);
+
+		String sGoToSleep = DateUtil.getTime(sleepHour, sleepMin);
+		data.setGoBedTime(sGoToSleep);
+		log.info("入睡时间:"+sGoToSleep);
+		
+		StringBuffer sbActivedata = new StringBuffer(); //运动数据
+		for (int i = 26; i < 122; i++) {
+//			if (buffer.get(i) != 0) {
+				sbActivedata.append((char) buffer.get(i));
+//			}
+		}
+		int active[]=new int[48];
+		for(int i=0; i<48; i++)
+		{
+			active[i]=ByteUtil.getShortByLittlePattern(sbActivedata.toString().getBytes(),i*2);
+		}
+		StringBuffer activeStr = new StringBuffer();
+		//第一项
+		activeStr.append(active[47]);
+		for(int i=46; i>=0; i--)
+		{
+			activeStr.append(",").append(active[i]);
+		}
+		String stepdate = DateUtil.getDate(year,month,day);
+		data.setMeasureTime(stepdate);
+		data.setDailyActivitySteps(activeStr.toString());
+	}
+	private void getCarFuncData(IoBuffer buffer, No8SportsPacket data) {
+		byte[] carFuncStratHR_b = new byte[2];	
+		byte[] carFuncEndHR_b = new byte[2];	
+		byte[] carFuncSteps_b = new byte[2];	
+		carFuncStratHR_b[0] = buffer.get(124);
+		carFuncStratHR_b[1] = buffer.get(125);
+		carFuncEndHR_b[0] = buffer.get(128);
+		carFuncEndHR_b[1] = buffer.get(129);
+		carFuncSteps_b[0] = buffer.get(130);
+		carFuncSteps_b[1] = buffer.get(131);
+
+		int carFuncStartHour=buffer.get(123);
+		int carFuncStartMin=buffer.get(122);
+		int carFuncStratHR=ByteUtil.getShortByLittlePattern(carFuncStratHR_b,0);
+		int carFuncEndHour=buffer.get(127);
+		int carFuncEndMin=buffer.get(126);
+		int carFuncEndHR=ByteUtil.getShortByLittlePattern(carFuncEndHR_b,0);
+		int carFuncSteps=ByteUtil.getShortByLittlePattern(carFuncSteps_b,0);
+		//判断是否有心功能测试数据
+		if(carFuncSteps>0)
+		{
+			String CarStartTime = DateUtil.getTime(carFuncStartHour, carFuncStartMin);
+			data.setCarFuncStartTime(CarStartTime);
+			log.info("心功能开始时间:"+carFuncStartHour+"点"+carFuncStartMin+"分");
+
+			data.setCarFuncStratHR(String.valueOf(carFuncStratHR));
+			log.info("心功能开始心率:"+carFuncStratHR);
+		
+			String CarEndTime = DateUtil.getTime(carFuncEndHour,carFuncEndMin);
+			data.setCarFuncEndTime(CarEndTime);
+			log.info("心功能结束时间:"+carFuncEndHour+"点"+carFuncEndMin+"分");
+		
+			data.setCarFuncEndHR(String.valueOf(carFuncEndHR));
+			log.info("心功能结束心率:"+carFuncEndHR);
+		
+			data.setHfSteps(String.valueOf(carFuncSteps));
+			log.info("心功能活动步数:"+carFuncSteps);
+			
+			data.setHasHeartFunction(true);
+		}
+		
+	}
+}

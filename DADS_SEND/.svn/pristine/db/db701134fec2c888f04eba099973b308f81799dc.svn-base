@@ -1,0 +1,6 @@
+package com.cmcc.send.observer.impl;
+
+import com.cmcc.send.observer.Subject;
+
+public class DataSaveSubject extends Subject {
+}

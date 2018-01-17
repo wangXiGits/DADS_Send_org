@@ -1,0 +1,208 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.cmcc.monitor.Dao.UsertblDAO;
+import com.cmcc.monitor.Service.PeopleInfoService;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.ExcelRead;
+import com.cmcc.monitor.Util.ExcelWriter;
+import com.cmcc.monitor.Util.UserSyncUtil;
+import com.cmcc.monitor.base.Domain.Usertbl;
+
+@Service
+public class PeopleInfoServiceImpl implements PeopleInfoService {
+	private static Logger log = Logger.getLogger(PeopleInfoServiceImpl.class);
+	@Autowired
+	private UsertblDAO usertblDAO;
+	@Override
+	public List<Usertbl> getAllPeopleInfo(JSONObject param) {
+		// TODO Auto-generated method stub
+		String deviceId = "";
+		if(param.containsKey("deviceId"))
+			deviceId = param.getString("deviceId");
+		
+		String deviceType = "";	
+		if(param.containsKey("deviceType"))
+			deviceType = param.getString("deviceType");
+		
+		String deviceUseFlag = "";	
+		if(param.containsKey("deviceUseFlag"))
+			deviceUseFlag = param.getString("deviceUseFlag");
+		
+		String patientId = "";	
+		if(param.containsKey("patientId"))
+			patientId = param.getString("patientId");
+		
+		String company = "";	
+		if(param.containsKey("company"))
+			company = param.getString("company");
+		
+		int page = 0;	
+		if(param.containsKey("page"))
+			page = param.getInt("page");
+		
+		int pageSize = Integer.MAX_VALUE;	
+		if(param.containsKey("pageSize"))
+			pageSize = param.getInt("pageSize");
+		
+		//组织查询条件
+		StringBuilder condition = new StringBuilder(" where 1=1 ");
+		if(!"".equals(deviceId))
+		{
+			condition.append(" and o.deviceId='"+deviceId+"'");
+		}
+		if(!"".equals(deviceType))
+		{
+			condition.append(" and o.deviceType"+deviceType+"'");
+		}
+		if(!"".equals(patientId))
+		{
+			condition.append(" and o.patientId='"+patientId+"'");
+		}
+		if(!"".equals(deviceUseFlag))
+		{
+			condition.append(" and o.deviceUseFlag='"+deviceUseFlag+"'");
+		}
+		if(!"".equals(patientId))
+		{
+			condition.append(" and o.patientId='"+patientId+"'");
+		}
+		if(!"".equals(company))
+		{
+			condition.append(" and o.company='"+company+"'");
+		}
+		if(condition.toString().equals(" where 1=1 "))
+		{
+			//没有条件
+			return usertblDAO.findScrollPage(page, pageSize, "");
+		}
+		else
+		{
+			return usertblDAO.findScrollPage(page, pageSize, condition.toString());
+		}
+	}
+
+	@Override
+	public HSSFWorkbook getPeopleInfoSheet(List<Usertbl> list) {
+		// TODO Auto-generated method stub
+		String[] title = {"姓名","手机号","所属单位","设备ID","设备类型","设备使用标示","email","所属班组"};
+		String[] params = {"getPname","getPatientId","getCompany","getDeviceId","getDeviceType","getDeviceUseFlag","getEmail","getTeamName"};
+		return ExcelWriter.writeExcel(list,"数据网关用户信息", "数据网关用户信息", title, params);
+	}
+
+	@Override
+	public boolean importPeopleInfo(MultipartFile f) {
+		// TODO Auto-generated method stub
+		List<Usertbl> list = null;
+		try {
+			list = ExcelRead.readmedcinefromexcel(f.getInputStream());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		Iterator<Usertbl> iterator = list.iterator();
+		while(iterator.hasNext())
+		{
+			Usertbl people = iterator.next();
+			//验证是否存在
+			if(null!=this.usertblDAO.findScrollPage(0, 1, " where o.deviceId='"+people.getDeviceId()+"' or o.patientId='"+people.getPatientId()+"'"))
+			{
+				//不存在
+				this.usertblDAO.insert(people);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean offDevice(JSONArray ids) {
+		for(int i=0;i<ids.size();i++)
+		{
+			Usertbl entity = this.usertblDAO.findById(ids.getInt(i));
+			entity.setDeviceUseFlag("0");
+			this.usertblDAO.update(entity);
+		}
+		return true;
+	}
+
+	@Override
+	public boolean updatePeople(JSONObject param) {
+		Usertbl people = this.usertblDAO.findById(param.getInt("id"));
+		people.setCompany(param.containsKey("company")?param.getString("company"):people.getCompany());
+		people.setDeviceId(param.containsKey("deviceId")?param.getString("deviceId"):people.getDeviceId());
+		people.setDeviceType(param.containsKey("deviceType")?param.getString("deviceType"):people.getDeviceType());
+		people.setDeviceUseFlag(param.containsKey("deviceUseFlag")?param.getString("deviceUseFlag"):people.getDeviceUseFlag());
+		people.setEmail(param.containsKey("email")?param.getString("email"):people.getEmail());
+		people.setPatientId(param.containsKey("patientId")?param.getString("patientId"):people.getPatientId());
+		people.setPname(param.containsKey("pname")?param.getString("pname"):people.getPname());
+		people.setTeamName(param.containsKey("teamName")?param.getString("teamName"):people.getTeamName());
+		people.setCompanyName(param.containsKey("companyName")?param.getString("companyName"):people.getCompanyName());
+		this.usertblDAO.update(people);
+		return true;
+	}
+
+	@Override
+	public boolean savePeople(JSONObject param) {
+		Usertbl people = new Usertbl();
+		people.setCompany(param.containsKey("company")?param.getString("company"):people.getCompany());
+		people.setDeviceId(param.containsKey("deviceId")?param.getString("deviceId"):people.getDeviceId());
+		people.setDeviceType(param.containsKey("deviceType")?param.getString("deviceType"):people.getDeviceType());
+		people.setDeviceUseFlag(param.containsKey("deviceUseFlag")?param.getString("deviceUseFlag"):people.getDeviceUseFlag());
+		people.setEmail(param.containsKey("email")?param.getString("email"):people.getEmail());
+		people.setPatientId(param.containsKey("patientId")?param.getString("patientId"):people.getPatientId());
+		people.setPname(param.containsKey("pname")?param.getString("pname"):people.getPname());
+		people.setTeamName(param.containsKey("teamName")?param.getString("teamName"):people.getTeamName());
+		people.setCompanyName(param.containsKey("companyName")?param.getString("companyName"):people.getCompanyName());
+		this.usertblDAO.insert(people);
+		return true;
+	}
+
+	/**
+     * 功能：向EMR用同步用户
+     * 范围：本接口适用于批量导入用户的流程：运维同步给EMR
+     */
+	@Override
+	public String pushUserToEMR(String patients) {
+		Map<String, String> retMap = new HashMap<String, String>();
+		StringBuilder failureUsers = new StringBuilder();
+		JSONArray jsonArray = JSONArray.fromObject(patients);
+		boolean ret = false;
+		String sql = "update usertbl set emr_flag='1' where id=?";
+		for(int i=0;i<jsonArray.size();i++){
+			JSONObject json = jsonArray.getJSONObject(i);
+			ret = UserSyncUtil.pushUserInfoToEMR(json);
+			ret = true;
+			if(!ret){
+				failureUsers.append(json.get("phone")).append(";");
+				log.info("同步到EMR失败-"+json);
+			}else{
+				log.info("同步到EMR成功-"+json);
+				C3P0Util.insertOrUpdateData(sql, json.getString("id"));
+			}
+		}
+		if(failureUsers.length()>0){
+			retMap.put("status", "FAILURE");
+			retMap.put("info", "以下信息同步失败:"+failureUsers.toString());
+		}else{
+			retMap.put("status", "SUCCESS");
+			retMap.put("info", "数据同步成功...");
+		}
+		return JSONObject.fromObject(retMap).toString();
+	}
+	
+}

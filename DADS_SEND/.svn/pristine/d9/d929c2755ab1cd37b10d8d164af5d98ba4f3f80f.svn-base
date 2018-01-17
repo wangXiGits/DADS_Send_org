@@ -1,0 +1,41 @@
+package com.cmcc.monitor.Service;
+
+import java.util.List;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import com.cmcc.monitor.base.Domain.Packagedata;
+
+public interface PackDataService {
+	/**
+	 * 查询出符合条件的所有pack
+	 * 
+	 * @return
+	 */
+	public List<Packagedata> getPacksByCondition(JSONObject map);
+
+	public boolean deletePacks(JSONArray ids);
+	/**
+	 * 重发数据(指定数据包id)：flag、sendFlag 均置为0
+	 * @param ids
+	 * @return
+	 */
+	public boolean reSendPacks(JSONArray ids);
+
+	public boolean updatePack(JSONObject param);
+
+	public boolean addPack(JSONObject param);
+
+	/**
+	 * 根据用户手机号和日期查询该天指定类型的数据，返回json数组
+	 * 
+	 * @param phone 手机号
+	 * @param queryDate 日期 2014-01-01
+	 * @param type
+	 *            (SIMPLE 简要，STEPCOUNT2 详细，STEPCOUNT3 有效步数)
+	 * @return json数组
+	 */
+	public String getPackagedataForMT(String phone, String queryDate,
+			String type);
+}

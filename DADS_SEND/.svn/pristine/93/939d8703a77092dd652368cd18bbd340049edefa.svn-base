@@ -1,0 +1,28 @@
+package com.cmcc.monitor.Dao;
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.UserparaminfoGateway;
+
+/**
+ * A data access object (DAO) providing persistence and search support for
+ * UserparaminfoGateway entities. Transaction control of the save(), update()
+ * and delete() operations can directly support Spring container-managed
+ * transactions or they can be augmented to handle user-managed Spring
+ * transactions. Each of these methods provides additional information for how
+ * to configure it for the desired type of transaction control.
+ * 
+ * @see com.cmcc.monitor.base.Domain.UserparaminfoGateway
+ * @author MyEclipse Persistence Tools
+ */
+
+public interface UserparaminfoGatewayDAO{
+	public void insert(UserparaminfoGateway entity);
+
+	public void update(UserparaminfoGateway entity);
+
+	public void delete(int id);
+	
+	public UserparaminfoGateway findById(int id);
+	
+	public List<UserparaminfoGateway> findScrollPage(final int page,final int pagesize,final String condition);
+}

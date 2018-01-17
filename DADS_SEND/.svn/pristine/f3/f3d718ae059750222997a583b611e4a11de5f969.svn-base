@@ -1,0 +1,62 @@
+package com.cmcc.monitor.test;
+
+import java.util.Arrays;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.log4j.Logger;
+import org.junit.Test;
+
+import com.cmcc.monitor.api.Controller.PatientInfoController;
+
+public class TestAutoSyno {
+	private static Logger log = Logger.getLogger(TestAutoSyno.class);
+	@Test
+	public void testAuto(){
+		String url = "http://localhost:8080/DADS/autoSynoPatientInfo.json";
+		JSONObject json = new JSONObject();
+		json.put("phone", "15711151475");
+		json.put("deviceId", "TEST00001");
+		json.put("company", "HBCC");
+		json.put("email", "123@126.com");
+		json.put("pname", "测试1");
+		json.put("companyName", "研究院");
+		System.out.println("kkk");
+		if(sendHttpData(url,json.toString())){
+			log.info("Syno success");
+		}else{
+			log.info("Syno failure");
+		}
+		
+	}
+	private boolean sendHttpData(String url, String paramter){
+		HttpClient client = new HttpClient(); 
+		PostMethod post = new PostMethod(url);
+		boolean isSuccess=true; 
+		try {
+//			post.setRequestBody(parameter); 
+//			post.addParameter("data", paramter);
+			post.setParameter("data", paramter);
+//			post.setParameter(parameterName, parameterValue)
+			log.info(" send data to gateway : "+paramter);
+			int returnFlag = client.executeMethod(post);
+			if(returnFlag!=200){
+				isSuccess=false;
+			}
+			log.info(" gateway success receive form post: " + post.getStatusLine().toString()+ ",returnFlag="+returnFlag);      
+		} catch (Exception e) {
+			e.printStackTrace();
+			isSuccess=false;
+			log.info(" gateway fail receive form post: " +e.getMessage());      
+		}finally{
+			if(post!=null){
+				post.releaseConnection();
+				log.info(" gateway post.releaseConnection() " + "is coming");    				
+			}
+		}
+		return isSuccess;
+	}
+}

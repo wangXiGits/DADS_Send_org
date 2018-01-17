@@ -1,0 +1,19 @@
+package com.cmcc.monitor.Dao;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.ProductDatatype;
+
+public interface ProductDatatypeDao {
+	public void insert(ProductDatatype entity);
+
+	public void update(ProductDatatype entity);
+
+	public void saveOrUpdate(ProductDatatype entity);
+	
+	public void delete(int id);
+	
+	public ProductDatatype findById(int id);
+	
+	public List<ProductDatatype> findScrollPage(final int page,final int pagesize,final String condition);
+}

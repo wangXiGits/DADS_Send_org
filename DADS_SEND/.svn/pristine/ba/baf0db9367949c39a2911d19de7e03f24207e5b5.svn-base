@@ -1,0 +1,31 @@
+package com.cmcc.thread.test;
+
+import com.cmcc.monitor.test.StepcountPackageThread;
+
+//import java.io.* ;
+public class ThreadClient{
+	public static void main(String args[]) throws Exception {	// �����쳣�׳�
+//		for(int i=0;i<1;i++)
+//		{
+//			new Thread(new StepcountPackageThread(i+1)).start() ;	// ÿһ���ͻ��˱�ʾһ���߳�
+//		}
+		for(int j=0;j<3;j++){
+			for(int i=1;i<=60;i++)
+			{
+				new Thread(new StepcountPackageThread(i)).start() ;	// ÿһ���ͻ��˱�ʾһ���߳�
+			}
+		}
+//		for(int i=0;i<80;i++)
+//		{
+//			new Thread(new PacketHandleThread(i)).start() ;	// ÿһ���ͻ��˱�ʾһ���߳�
+//		}
+//		for(int i=0;i<80;i++)
+//		{
+//			new Thread(new PacketHandleThread(i)).start() ;	// ÿһ���ͻ��˱�ʾһ���߳�
+//		}
+//		for(int i=0;i<80;i++)
+//		{
+//			new Thread(new PacketHandleThread(i)).start() ;	// ÿһ���ͻ��˱�ʾһ���߳�
+//		}
+	}
+};

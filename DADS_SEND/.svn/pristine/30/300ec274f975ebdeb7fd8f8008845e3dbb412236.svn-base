@@ -1,0 +1,257 @@
+package com.cmcc.mina.component.milink.sport.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.milink.sports.No8FourWayPacket;
+import com.cmcc.mina.util.DataTypeChangeHelper;
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+/*
+ * 实现8-4数据包的编码
+ */
+public class No8FourWayParser extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		//此协议与血压计8号包相同，需要根据包长度进一步区分:血压计8号包定长47个字节；
+		if(buffer.get(8)==8 && buffer.get(9)==4)
+		{
+			byte[] length = new byte[4];
+			length[0] = buffer.get(4);
+			length[1] = buffer.get(5);
+			length[2] = buffer.get(6);
+			length[3] = buffer.get(7);
+			long len = DataTypeChangeHelper.unsigned4BytesToInt(length,0);
+			if(len != 47)
+				return true;
+			else
+				return false;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		No8FourWayPacket packet = new No8FourWayPacket();
+		int number = 0;
+		byte length[] = new byte[4];
+		byte year[] = new byte[2];
+		byte stepcount[] = new byte[2];
+		byte stepkcal[] = new byte[2];
+		byte data[] = new byte[2];
+		int year_u[] = new int[24];
+		int month_u[] = new int[24];
+		int day_u[] = new int[24];
+		int Hour[] = new int[24];
+		int hourdata[][] = new int[24][72];
+		length[0] = buffer.get(4);
+		length[1] = buffer.get(5);
+		length[2] = buffer.get(6);
+		length[3] = buffer.get(7);
+		long lengthvalue = DataTypeChangeHelper.unsigned4BytesToInt(length,0);
+		//********** 2013/06/26 begin *************
+		String deviceID = DeviceIDResolver.getDeviceIDFromBytes(buffer.array(), (int) (lengthvalue-18));
+		String patientID = DeviceIDResolver.searchPatientidByDeviceid(deviceID);
+		String company = DeviceIDResolver.searchCompanyByDeviceid(deviceID);
+		packet.setCompany(company);
+		packet.setDeviceID(deviceID);
+		packet.setPatientID(patientID);
+		
+		//*********** 2013/06/26 end **************
+		//old protocol unUSEDATA bytes num is 12 ****** 2013/07/01 *******
+		int unUsedataNum = 12;
+		if((lengthvalue-12)%114==0){
+			unUsedataNum = 12;
+		}else{
+			//new protocol unUSEDATA bytes num is 33 ****** 2013/06/13 *******
+			unUsedataNum = 33;
+		}
+		long max_times_tran = (lengthvalue-unUsedataNum)/114;
+		
+		for(int i=0;i<=24;i++)
+		{
+			if(number==(lengthvalue-unUsedataNum))
+			{
+				break;
+			}
+		    year[1] = buffer.get(10+number);
+		    year[0] = buffer.get(11+number);
+		    year_u[i] = DataTypeChangeHelper.byte2int(year);  
+		    month_u[i] = buffer.get(13+number);
+		    day_u[i] = buffer.get(14+number);
+		    Hour[i]= buffer.get(15+number);
+		    for(int j=0;j<12;j++)
+		    {
+		        stepcount[0] = buffer.get(16+j*2+number);
+		        stepcount[1] = buffer.get(17+j*2+number);
+		        hourdata[i][j] = DataTypeChangeHelper.byte2int(stepcount);
+	                
+		    }
+		    for(int j=0;j<12;j++)
+		    {
+		    	stepkcal[0] = buffer.get(40+j*2+number);
+		    	stepkcal[1] = buffer.get(41+j*2+number);
+		        hourdata[i][j+12] = DataTypeChangeHelper.byte2int(stepkcal);                             	
+		    }                        
+		    for(int j=0;j<12;j++)
+		    {
+		    	if(buffer.get(64+j+number)<0)
+		    	{
+		    		hourdata[i][j+24] = buffer.get(64+j+number)+256;
+		    		hourdata[i][j+24] = hourdata[i][j+24]*2;
+		    	}
+		    	else
+		    	{
+		            hourdata[i][j+24] = buffer.get(64+j+number);
+		            hourdata[i][j+24] = hourdata[i][j+24]*2;
+		    	}
+		    	if(buffer.get(76+j+number)<0)
+		    	{
+		    		hourdata[i][j+36] = buffer.get(76+j+number)+256;
+		    		hourdata[i][j+36] = hourdata[i][j+36]*2;
+		    	}				                
+		    	else
+		    	{
+		            hourdata[i][j+36] = buffer.get(76+j+number);
+		            hourdata[i][j+36] = hourdata[i][j+36]*2;
+		    	}
+		        if(buffer.get(88+j+number)<0)
+		    	{
+		    		hourdata[i][j+48] = buffer.get(88+j+number)+256;
+		    		hourdata[i][j+48] = hourdata[i][j+48]*2;
+		    	}				                
+		        else
+		        {
+		            hourdata[i][j+48] = buffer.get(88+j+number);
+		            hourdata[i][j+48] = hourdata[i][j+48]*2;
+		        }
+		    }                             
+		    for(int j=0;j<12;j++)
+		    {
+		    	data[0] = buffer.get(100+j*2+number);
+		    	data[1] = buffer.get(101+j*2+number);
+		        hourdata[i][j+60] = DataTypeChangeHelper.byte2int(data);                             	
+		    }                          	
+		    number = number+114;
+		}
+
+		for(int times_tran=0;times_tran<max_times_tran;times_tran++)
+		{
+		
+			//要传的字段
+			StringBuffer stepcount3data = new StringBuffer();
+//			stepcount3data.append("\"");//alter on 2014/06/03
+			
+			stepcount3data = stepcount3data.append("{\"data\":{\"datatype\":\"STEPCOUNT3\",");
+			stepcount3data = stepcount3data.append("\"hour\""+":\""+String.valueOf(Hour[times_tran])+"\","+"\"datavalue\":[{\"snyxp5\":");							
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i]));
+				}
+				else
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i])).append(",");
+				}                    			    	
+		    }
+			stepcount3data.append("\"");
+			
+			stepcount3data.append("},{\"knp5\":");
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i+12]));
+				}
+				else
+				{
+		    	    stepcount3data.append(String.valueOf(hourdata[times_tran][i+12])).append(",");
+				}
+		    }							
+			stepcount3data.append("\"");
+			
+			stepcount3data.append("},{\"level2p5\":");
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i+24]));
+				}
+				else
+				{
+		    	    stepcount3data.append(String.valueOf(hourdata[times_tran][i+24])).append(",");
+				}
+		    }							
+			stepcount3data.append("\"");
+			
+			stepcount3data.append("},{\"level3p5\":");
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {              		
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i+36]));
+				}
+				else
+				{
+		    	    stepcount3data.append(String.valueOf(hourdata[times_tran][i+36])).append(",");   
+				}
+		    }							
+			stepcount3data.append("\"");
+			stepcount3data.append("},{\"level4p5\":");
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {              		
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i+48]));
+				}
+				else
+				{
+		    	    stepcount3data.append(String.valueOf(hourdata[times_tran][i+48])).append(",");
+				}
+		    }							
+			stepcount3data.append("\"");
+			stepcount3data.append("},{\"yuanp5\":");
+			stepcount3data.append("\"");
+			for(int i=0;i<12;i++)
+		    {           
+				if(i==11)
+				{
+					stepcount3data.append(String.valueOf(hourdata[times_tran][i+60]));
+				}
+				else
+				{
+		    	    stepcount3data.append(String.valueOf(hourdata[times_tran][i+60])).append(","); 
+				}
+		    }							
+			stepcount3data.append("\"");
+			
+		    stepcount3data.append("}]}}");
+		    
+//		    stepcount3data.append("\"");//alter on 2014/06/03
+		    
+		    Logger.writeLog("stepcount3data: "+stepcount3data.toString());
+		    
+		    //alter by rencm on 20130911 format:yyyy-MM-dd
+			String stepdate = DateUtil.format(year_u[times_tran]+"-"+month_u[times_tran]+"-"+day_u[times_tran]);
+			stepdate = stepdate.replaceAll("-", "");
+			String stepcount3data_tran = stepcount3data.toString();
+			
+			packet.getStepcount3data_tran().add(stepcount3data_tran);
+			packet.getStepdate().add(stepdate);
+
+		}
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return packet;
+	}
+
+}

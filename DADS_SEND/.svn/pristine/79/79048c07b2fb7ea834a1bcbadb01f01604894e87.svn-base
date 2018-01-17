@@ -1,0 +1,52 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.ProductDatatypeDao;
+import com.cmcc.monitor.Service.ProductDatatypeService;
+import com.cmcc.monitor.base.Domain.ProductDatatype;
+@Service
+public class ProductDatatypeServiceImpl implements ProductDatatypeService{
+	@Autowired
+	private ProductDatatypeDao  productDatatypeDao;
+	@Override
+	public void insert(ProductDatatype entity) {
+		// TODO Auto-generated method stub
+		this.productDatatypeDao.insert(entity);
+	}
+
+	@Override
+	public void update(ProductDatatype entity) {
+		// TODO Auto-generated method stub
+		this.productDatatypeDao.update(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		// TODO Auto-generated method stub
+		this.productDatatypeDao.delete(id); 
+	}
+
+	@Override
+	public ProductDatatype findById(int id) {
+		// TODO Auto-generated method stub
+		return this.productDatatypeDao.findById(id);
+	}
+
+	@Override
+	public List<ProductDatatype> findScrollPage(int page, int pagesize,
+			String condition) {
+		// TODO Auto-generated method stub
+		return this.productDatatypeDao.findScrollPage(page, pagesize, condition);
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

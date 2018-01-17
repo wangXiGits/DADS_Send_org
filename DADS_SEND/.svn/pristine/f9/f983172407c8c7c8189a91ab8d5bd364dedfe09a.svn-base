@@ -1,0 +1,13 @@
+package com.cmcc.mina.strategy;
+
+import org.apache.log4j.Logger;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.PackageData;
+
+public interface MHDataPacketHandleStrategy {
+	public static Logger log = Logger.getLogger(MHDataPacketHandleStrategy.class);
+	public boolean handle(IoSession session, Object message);
+	public Object getNextRealState(IoSession session,PackageData pack) throws InstantiationException, IllegalAccessException;
+	public String getNextState(IoSession session,PackageData pack);
+}

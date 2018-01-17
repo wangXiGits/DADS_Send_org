@@ -1,0 +1,94 @@
+package com.cmcc.monitor.listener;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.apache.log4j.Logger;
+
+import com.cmcc.gateway.SendThread.BloodglucoseDataSendThread;
+import com.cmcc.gateway.SendThread.BloodpressureDataSendThread;
+import com.cmcc.gateway.SendThread.CmccPHRSendDataThread;
+import com.cmcc.gateway.SendThread.DailyExerciseDataSendThread;
+import com.cmcc.gateway.SendThread.EMR1PHRSendDataThread;
+import com.cmcc.gateway.SendThread.EcgDataSendThread;
+import com.cmcc.gateway.SendThread.HeartfunctionDataSendThread;
+import com.cmcc.gateway.SendThread.SleepDataSendThread;
+import com.cmcc.gateway.SendThread.Spo2DataSendThread;
+import com.cmcc.gateway.SendThread.SportsDataSendThread;
+import com.cmcc.gateway.SendThread.WeightDataSendThread;
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.monitor.task.DataStatisticsTask;
+import com.cmcc.monitor.task.GWMonitor;
+import com.cmcc.monitor.task.WSJKTestDataSender;
+
+public class InitContextListener implements ServletContextListener {
+	private static Logger log = Logger.getLogger(InitContextListener.class);
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+
+	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent arg0) {
+		if("on".equals(PropertiesReader.getProp("wsjkTestData"))){
+			log.info("开启定时发送数据线程");
+			new Thread(new WSJKTestDataSender()).start();
+		}
+		if("on".equals(PropertiesReader.getProp("restartToggle"))){
+			//开启网关监控线程
+			new GWMonitor().process();
+		}
+		if("on".equals(PropertiesReader.getProp("dataStatisticsToggle"))){
+			//开启数据定时统计
+			new Thread(new DataStatisticsTask()).start();
+		}
+//		if("on".equals(PropertiesReader.getProp("ecgdataToggle"))){
+//			//开启心电发送线程
+//			new Thread(new EcgDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("bloodpressureToggle"))){
+//			//开启血压发送线程
+//			new Thread(new BloodpressureDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("bloodglucoseToggle"))){
+//			//开启血糖发送线程
+//			new Thread(new BloodglucoseDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("heartfunctionToggle"))){
+//			//开启心功能运动发送线程
+//			new Thread(new HeartfunctionDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("dailyexerciseToggle"))){
+//			//开启心功能运动发送线程
+//			new Thread(new DailyExerciseDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("sleepToggle"))){
+//			//开启睡眠发送线程
+//			new Thread(new SleepDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("weightToggle"))){
+//			//开启体重发送线程
+//			new Thread(new WeightDataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("spo2Toggle"))){
+//			//开启血氧发送线程
+//			new Thread(new Spo2DataSendThread()).start();
+//		}
+//		if("on".equals(PropertiesReader.getProp("sportsToggle"))){
+//			//开启运动发送线程
+//			new Thread(new SportsDataSendThread()).start();
+//		}
+		if("on".equals(PropertiesReader.getProp("phr183"))){
+			//发完183测试环境
+			new Thread(new CmccPHRSendDataThread()).start();
+		}
+		if("on".equals(PropertiesReader.getProp("emrToggle"))){
+			//发往北京正式环境
+			new Thread(new EMR1PHRSendDataThread()).start();
+		}
+	}
+}

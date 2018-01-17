@@ -1,0 +1,54 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.DataManageService;
+import com.cmcc.monitor.Util.LoginUserInfo;
+@Controller
+public class DataManageController extends BaseController {
+	private static Logger log = Logger.getLogger(DataManageController.class);
+	@Autowired
+	private DataManageService dataManageService;
+	/**
+	 * 查询指定类型数据
+	 * 必传参数：data json格式
+	 * 		必含属性：dataType
+	 * 		可选属性有：beginRecTime、 endRecTime、begginSendTime、endSendTime、patientId、appType、deviceId、pageSize
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value="/getData.json",params={"data"})
+	public void getData(HttpServletRequest request,HttpServletResponse response){
+		log.info("begin call DataManageController.getData()...");
+		if(!LoginUserInfo.isLogin(request)){
+			this.writeToClient(response, "请先登录！");
+			log.info("用户未登录！");
+			return;
+		}
+		JSONObject map = null;
+		String param = request.getParameter("data");
+		if("".equals(param)){
+			map = new JSONObject();
+		}else{
+			map = JSONObject.fromObject(param);
+			log.info("data="+param);
+		}
+		List<HashMap<String, String>> list = dataManageService.getPacksByCondition(map);
+		JSONArray result = JSONArray.fromObject(list);
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"查看数据条数："+list.size());
+        log.info("end call DataManageController.getData()...");
+		this.writeToClient(response, result);
+	}
+}

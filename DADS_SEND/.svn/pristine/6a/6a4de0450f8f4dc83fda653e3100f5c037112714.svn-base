@@ -1,0 +1,32 @@
+package com.cmcc.mina.component.milink.sport.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.milink.sports.LogoutPacket;
+/*
+ * 实现退出数据包的编码
+ */
+public class SportLogoutParser extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		if(buffer.get(8)==1 && buffer.get(9)==3)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		LogoutPacket packet = new LogoutPacket();
+		packet.setName("sports");
+		packet.setType("logout");
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return packet;
+	}
+
+}

@@ -1,0 +1,10 @@
+package com.cmcc.mina.packet.jiays;
+
+import com.cmcc.mina.packet.PackageData;
+
+public class LogoutPacket extends PackageData {
+	public LogoutPacket(){
+		this.name = "jiays";
+		this.type = "logout";
+	}
+}

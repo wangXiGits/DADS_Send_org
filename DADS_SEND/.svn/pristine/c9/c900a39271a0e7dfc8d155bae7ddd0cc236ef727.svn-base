@@ -1,0 +1,144 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import static javax.persistence.GenerationType.IDENTITY;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+/**
+ * Product entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "product", uniqueConstraints = @UniqueConstraint(columnNames = "appName"))
+public class Product implements java.io.Serializable {
+
+	// Fields
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4283727584386844951L;
+	private Integer appId;
+	private String appDesc;
+	private String appName;
+	private String appSendFlag;
+	private String appToggle;
+	private String appUrl;
+	private String appQueueName;
+	private String updateTime;
+	private Set<ProductDatatype> productDatatypes = new HashSet<ProductDatatype>(
+			0);
+
+	// Constructors
+
+	/** default constructor */
+	public Product() {
+	}
+
+	/** full constructor */
+	public Product(String appDesc, String appName, String appSendFlag,
+			String appToggle, String appUrl, String appQueueName,
+			String updateTime, Set<ProductDatatype> productDatatypes) {
+		this.appDesc = appDesc;
+		this.appName = appName;
+		this.appSendFlag = appSendFlag;
+		this.appToggle = appToggle;
+		this.appUrl = appUrl;
+		this.appQueueName = appQueueName;
+		this.updateTime = updateTime;
+		this.productDatatypes = productDatatypes;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "appID", unique = true, nullable = false)
+	public Integer getAppId() {
+		return this.appId;
+	}
+
+	public void setAppId(Integer appId) {
+		this.appId = appId;
+	}
+
+	@Column(name = "appDesc", length = 50)
+	public String getAppDesc() {
+		return this.appDesc;
+	}
+
+	public void setAppDesc(String appDesc) {
+		this.appDesc = appDesc;
+	}
+
+	@Column(name = "appName", unique = true, length = 50)
+	public String getAppName() {
+		return this.appName;
+	}
+
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
+
+	@Column(name = "appSendFlag", length = 50)
+	public String getAppSendFlag() {
+		return this.appSendFlag;
+	}
+
+	public void setAppSendFlag(String appSendFlag) {
+		this.appSendFlag = appSendFlag;
+	}
+
+	@Column(name = "appToggle", length = 50)
+	public String getAppToggle() {
+		return this.appToggle;
+	}
+
+	public void setAppToggle(String appToggle) {
+		this.appToggle = appToggle;
+	}
+
+	@Column(name = "appUrl", length = 100)
+	public String getAppUrl() {
+		return this.appUrl;
+	}
+
+	public void setAppUrl(String appUrl) {
+		this.appUrl = appUrl;
+	}
+
+	@Column(name = "appQueueName", length = 50)
+	public String getAppQueueName() {
+		return this.appQueueName;
+	}
+
+	public void setAppQueueName(String appQueueName) {
+		this.appQueueName = appQueueName;
+	}
+
+	@Column(name = "updateTime", length = 20)
+	public String getUpdateTime() {
+		return this.updateTime;
+	}
+
+	public void setUpdateTime(String updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "product")
+	public Set<ProductDatatype> getProductDatatypes() {
+		return this.productDatatypes;
+	}
+
+	public void setProductDatatypes(Set<ProductDatatype> productDatatypes) {
+		this.productDatatypes = productDatatypes;
+	}
+
+}

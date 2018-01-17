@@ -1,0 +1,35 @@
+package com.cmcc.Util;
+
+import net.sf.json.JSONObject;
+
+import org.junit.Test;
+
+import com.cmcc.activeMQ.UserInfoMessageListener;
+import com.cmcc.monitor.Util.UserSyncUtil;
+
+public class UserSyncUtilTest {
+	@Test
+	public void testToEMR() throws Exception{
+		String userInfo = "{'opeType':'insert','deviceId':'xxx12345','phone':'15711111234','name':'任华','appType':'WSJK;WSYD','ywid':2}";
+		System.out.println(userInfo);
+		UserSyncUtil.pushUserInfoToEMR(JSONObject.fromObject(userInfo));
+	}
+	@Test
+	public void testDeleteFromEMR() throws Exception{
+		String userInfo = "{'opeType':'delete','deviceId':'xxx12345','phone':'15711111234','name':'任华','appType':'WSJK;WSYD','ywid':2}";
+		System.out.println(userInfo);
+		UserSyncUtil.deleteUserFromEMR(JSONObject.fromObject(userInfo));
+	}
+	@Test
+	public void testHandleInsertUserInfo() throws Exception{
+		String userInfo = "{'opeType':'insert','deviceId':'xxx12345','phone':'15711111234','name':'任华2','appType':'WSJK;WSYD','ywid':2}";
+		System.out.println(userInfo);
+		UserInfoMessageListener.handleUserInfo(userInfo);
+	}
+	@Test
+	public void testHandleDeleteUserInfo() throws Exception{
+		String userInfo = "{'opeType':'delete','deviceId':'xxx12345','phone':'15711111234','name':'任华2','appType':'WSJK;WSYD','ywid':2}";
+		System.out.println(userInfo);
+		UserInfoMessageListener.handleUserInfo(userInfo);
+	}
+}

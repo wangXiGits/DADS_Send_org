@@ -1,0 +1,135 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.ProductService;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.Product;
+import com.cmcc.monitor.base.Domain.ProductDatatype;
+import com.cmcc.send.observer.util.AppInfoContext;
+/**
+ * 产品管理
+ *
+ */
+@Controller
+public class ProductController extends BaseController {
+	private static Logger log = Logger.getLogger(ProductController.class);	
+	@Autowired
+	private ProductService productService;
+	@RequestMapping(value="/saveProduct.json" ,params={"data"})
+	public void saveproduct(HttpServletRequest request,HttpServletResponse response)throws Exception{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data");
+//		param=new String(param.getBytes("ISO-8859-1"), "utf-8");
+		try {
+			JSONObject jo = JSONObject.fromObject(param);
+			Product product=new Product();
+			product.setAppDesc(jo.getString("appDesc"));
+			product.setAppName(jo.getString("appName"));
+			product.setAppSendFlag(jo.getString("appSendFlag"));
+			product.setAppToggle(jo.getString("appToggle"));
+			product.setAppUrl(jo.getString("appUrl"));
+			product.setAppQueueName(jo.getString("appQueueName"));
+			product.setUpdateTime(DateUtil.getCurrentTime());
+			productService.insert(product);
+			result.put("status", "SUCCESS");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+        log.info("添加了product表中,param: "+param);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/updateProduct.json",params={"data"})
+	public void updateProduct(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data").toString();
+		//param=new String(param.getBytes("ISO-8859-1"), "utf-8");
+		try {
+			JSONObject jo = JSONObject.fromObject(param);
+			
+			Product product=new Product();
+			product.setAppId(jo.getInt("appId"));
+			product.setAppDesc(jo.getString("appDesc"));
+			product.setAppName(jo.getString("appName"));
+			product.setAppSendFlag(jo.getString("appSendFlag"));
+			product.setAppToggle(jo.getString("appToggle"));
+			product.setAppUrl(jo.getString("appUrl"));
+			product.setAppQueueName(jo.getString("appQueueName"));
+			product.setUpdateTime(DateUtil.getCurrentTime());
+			productService.update(product);
+			result.put("status", "SUCCESS");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+        log.info("更新了product表,param: "+param);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/deleteProduct.json",params={"data"})
+	public void deleteProduct(HttpServletRequest request,HttpServletResponse response)
+	{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data");
+		Product product= new Product();
+		try {
+			JSONObject jo=JSONObject.fromObject(param);
+			product.setAppId(jo.getInt("appId"));
+			productService.delete(product.getAppId());
+			result.put("status", "SUCCESS");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+        log.info("删除Product中appId: "+product.getAppId()+"的记录");
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/queryProduct.json")
+	public void queryProduct(HttpServletRequest request,HttpServletResponse response){
+		List<Product> list = productService.findScrollPage(1, 1000, "");
+		
+		/**
+		 * 去除相互嵌套
+		*/
+		for (Product product : list) {
+			Set<ProductDatatype>set=product.getProductDatatypes();
+			Iterator<ProductDatatype> iterator = set.iterator();
+			while(iterator.hasNext()){
+				ProductDatatype pd = iterator.next();
+				pd.setDatatype(null);
+				pd.setProduct(null);
+			}
+		}
+		JSONArray result = JSONArray.fromObject(list);
+			log.info("查询了表product中的数据");
+	 	this.writeToClient(response, result);
+	}
+	/**
+	 * 刷新内存中信息
+	 */
+	private static void refreshContext(){
+		AppInfoContext.initAppInfo();
+		log.info("内存中 apptype 信息已更新");
+	}
+}
+

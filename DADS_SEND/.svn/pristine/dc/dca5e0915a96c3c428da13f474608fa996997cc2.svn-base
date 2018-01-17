@@ -1,0 +1,137 @@
+package com.cmcc.mina.state.jiays.impl;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.jiays.LoginPacket;
+import com.cmcc.mina.packet.jiays.No8SportsPacket;
+import com.cmcc.mina.state.jiays.JiaysPacketHandleState;
+import com.cmcc.mina.util.MLinkCRC;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+import com.cmcc.send.observer.impl.SubjectFactory;
+
+public class No8SportsState implements JiaysPacketHandleState {
+
+	@Override
+	public boolean handlePacket(IoSession session, Object message) {
+		log.info(this.getClass().getSimpleName()+".handlePacket() begin...");
+		No8SportsPacket packet = null;
+		if (message != null && message instanceof No8SportsPacket) {
+			packet = (No8SportsPacket) message;
+			LoginPacket loginPacket = (LoginPacket) session.getAttribute("loginPackage");
+			//将登陆信息拷贝到数据包里
+			if(loginPacket!=null){
+				packet.setDeviceID(loginPacket.getDeviceID());
+				packet.setPatientID(loginPacket.getPatientID());
+				packet.setCompany(loginPacket.getCompany());
+				packet.setPassword(loginPacket.getPassword());
+				packet.setAppType(loginPacket.getAppType());
+			}
+			boolean result  = false;
+			
+			result = saveExerciseData(session, packet);
+			
+			// 回复ACK
+			responseToClient(session, result);
+			log.info(this.getClass().getSimpleName()
+					+ ".handlePacket() end.");
+			return result;
+		}
+		return false;
+	}
+	private boolean saveExerciseData(IoSession session, No8SportsPacket packet) {
+		JSONArray dataValue = new JSONArray();
+		JSONObject measureTime = new JSONObject();
+		JSONObject getUpTime = new JSONObject();
+		JSONObject goBedTime = new JSONObject();
+		JSONObject steps = new JSONObject();
+		measureTime.put("measureTime", packet.getMeasureTime()+" 00:00:00");
+		getUpTime.put("getUpTime", packet.getGetUpTime());
+		goBedTime.put("goBedTime", packet.getGoBedTime());
+		steps.put("steps", packet.getDailyActivitySteps());
+		dataValue.add(measureTime);
+		dataValue.add(getUpTime);
+		dataValue.add(goBedTime);
+		dataValue.add(steps);
+		StringBuffer sql = new StringBuffer(
+		"insert into dailyexercise(phone,deviceID,dataType,appType,company,receiveTime,realTime,dataValue) ");
+			sql.append("values('").append(packet.getPatientID())
+		.append("','").append(packet.getDeviceID())
+		.append("','").append(Constants.DATATYPE_DAILYEXERCISE)
+		.append("','").append(DeviceIDResolver.searchAppTypeByDeviced(packet.getDeviceID()))
+		.append("','").append(packet.getCompany())
+		.append("','").append(DateUtil.getCurrentTime())
+		.append("','").append(packet.getMeasureTime())
+		.append("','").append(dataValue.toString())
+		.append("')");
+
+		boolean result1 = C3P0Util.executeUpdate(sql.toString());
+		/**
+		 * 通知观察者启动发送线程
+		 */
+		SubjectFactory.getSubject(packet.getAppType(), Constants.DATATYPE_DAILYEXERCISE).notifyObserver();
+		//如果有心功能运动数据
+		if (packet.isHasHeartFunction()) {
+			dataValue.clear();
+			JSONObject hfStartTime = new JSONObject();
+			JSONObject hfStartHeartRate = new JSONObject();
+			JSONObject hfEndTime = new JSONObject();
+			JSONObject hfEndHeartRate = new JSONObject();
+			JSONObject hfSteps = new JSONObject();
+			hfStartTime.put("hfStartTime", packet.getCarFuncStartTime());
+			hfStartHeartRate.put("hfStartHeartRate", packet.getCarFuncStratHR());
+			hfEndTime.put("hfEndTime", packet.getCarFuncEndTime());
+			hfEndHeartRate.put("hfEndHeartRate", packet.getCarFuncEndHR());
+			hfSteps.put("hfSteps", packet.getHfSteps());
+			measureTime.put("measureTime", DateUtil.format(packet.getMeasureTime()+" "+packet.getCarFuncStartTime()+":00"));
+			dataValue.add(measureTime);
+			dataValue.add(hfStartTime);
+			dataValue.add(hfStartHeartRate);
+			dataValue.add(hfEndTime);
+			dataValue.add(hfEndHeartRate);
+			dataValue.add(hfSteps);
+			sql = new StringBuffer(
+			"insert into heartfunction(phone,deviceID,dataType,appType,company,receiveTime,realTime,dataValue) ");
+				sql.append("values('").append(packet.getPatientID())
+			.append("','").append(packet.getDeviceID())
+			.append("','").append(Constants.DATATYPE_HEARTFUNCTION)
+			.append("','").append(DeviceIDResolver.searchAppTypeByDeviced(packet.getDeviceID()))
+			.append("','").append(packet.getCompany())
+			.append("','").append(DateUtil.getCurrentTime())
+			.append("','").append(packet.getMeasureTime())
+			.append("','").append(dataValue.toString())
+			.append("')");
+				
+			C3P0Util.executeUpdate(sql.toString());
+			/**
+			 * 通知观察者启动发送线程
+			 */
+			SubjectFactory.getSubject(packet.getAppType(), Constants.DATATYPE_HEARTFUNCTION).notifyObserver();
+		}
+		return result1;
+	}
+	private void responseToClient(IoSession session, boolean isSuccess) {
+		byte[] reply = new byte[13];
+		reply[0] = -89; reply[1] = -72; reply[2] = 0; reply[3] = 2; //header
+		reply[4] = 0; reply[5] = 0; reply[6] = 0; reply[7] = 13; //length
+		reply[8] = 8; //type
+		reply[9] = 1; //type 一次测量运动数据
+		if(isSuccess)
+			reply[10] = 14; //result
+		else
+			reply[10] = 15;
+		//crc
+		byte[] crc_c = new byte[2];
+		crc_c = MLinkCRC.crc16(reply);
+		reply[11] = crc_c[0];
+		reply[12] = crc_c[1];
+		
+		session.write(IoBuffer.wrap(reply));
+	}
+}

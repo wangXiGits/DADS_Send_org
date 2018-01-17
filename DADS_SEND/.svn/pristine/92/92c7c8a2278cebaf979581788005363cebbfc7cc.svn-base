@@ -1,0 +1,209 @@
+body {
+    background: #D5E7FF;
+    overflow-y: scroll;
+    color: #8C8C73;
+    font-family: '微软雅黑';
+    font-size: 16px;
+}
+
+.outer {
+    background: white;
+    margin: 0 auto;
+    position: relative;
+    width: 960px;
+}
+
+.header > span {
+    position: absolute;
+    top: 100px;
+    right: 5px;
+    font-size: 14px;
+}
+
+.headerTop {
+    position: absolute;
+    top: 0;
+    right: 5px;
+}
+
+.headerTop > a {
+    font-size: 14px;
+}
+
+.headerBody {
+    margin-left: -25px;
+    background-image: url(../img/head.png);
+    height: 120px;
+    text-align: center;
+}
+
+.headerBody2 {
+    margin-left: -25px;
+    background-image: url(../img/head2.png);
+    height: 120px;
+    text-align: center;
+}
+
+.footer {
+    background: white;
+    position: relative;
+    height: 95px;
+    text-align: center;
+    line-height: 66px;
+    color: #6c6c6c;
+    font-size: 12px
+}
+
+.footerTop {
+    width: 100%;
+    height: 10px;
+    background-color: #f4bf59
+}
+
+.footerBottom {
+    width: 100%;
+    height: 85px;
+    background-color: #95C2E7
+}
+
+.footerBottom > a {
+    color: #ffffff;
+}
+
+.footerBottom > span {
+    margin: 0 auto;
+    position: relative;
+    top: -45px;
+    left: -7.5px;
+    color: #6c6c6c;
+    font-size: 10px;
+}
+
+.banner {
+    height: 120px;
+    position: relative;
+    overflow: auto;
+}
+
+.banner li {
+    list-style: none;
+}
+
+.banner ul li {
+    float: left;
+}
+
+.menu1 {
+    background: url("../img/button1.png") no-repeat;
+}
+
+.menu2 {
+    background: url("../img/button2.png") no-repeat;
+}
+
+.menu3 {
+    background-color: #FFCC22;
+}
+
+.menu4 {
+    background-color: gray;
+}
+
+.td {
+    font-size: 14px;
+    font-weight: bold;
+    color: red;
+}
+
+.p_1 {
+    width: 150px;
+}
+
+.p_2 {
+    position: relative;
+    width: 782px;
+    min-height: 260px;
+    margin-left: 14px;
+    text-align: right;
+}
+
+.p_2 tr:first-child {
+    color: red;
+    background: #cde3f6;
+    font-weight: bold;
+}
+
+.p_2 td {
+    font-family: '微软雅黑';
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.p_2 td[ng-click] {
+    cursor: pointer;
+}
+
+.p_2 td:last-child {
+    width: 100px;
+}
+
+.p_3 {
+    float: left;
+    position: relative;
+    top: 2px;
+    margin-left: 10px;
+}
+
+.p_3 font {
+    color: red;
+}
+
+.p_4 {
+    position: relative;
+    top: -5px;
+    margin-right: 10px;
+}
+
+.p_4 > span.add-on {
+    background: #fdcb02;
+}
+
+.p_4 > input {
+    width: 120px;
+}
+
+.p_5 {
+    text-align: center;
+}
+
+.p_5 table {
+    margin: 0 auto;
+}
+
+.p_5 tr {
+    height: 35px;
+}
+
+.p_5 td span {
+    position: relative;
+    top: 3px;
+    color: red;
+}
+
+.p_6 {
+    position: relative;
+    top: -5px;
+    margin-bottom: 10px;
+}
+
+.p_7 {
+    width: 90%;
+    margin: 0 auto;
+    text-align: right;
+}
+
+.p_8 {
+    width: 100%;
+    margin-left: 0;
+}

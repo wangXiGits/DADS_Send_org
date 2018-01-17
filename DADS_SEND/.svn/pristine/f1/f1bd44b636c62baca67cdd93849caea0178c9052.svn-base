@@ -1,0 +1,36 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.DatastatisticsDAO;
+import com.cmcc.monitor.Service.PackStatisticService;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.Datastatistics;
+
+@Service
+public class PackStatisticServiceImpl implements PackStatisticService {
+
+	@Autowired
+	private DatastatisticsDAO datastatisticsDAO;
+	@Override
+	public List<Datastatistics> getAllStatisticData(JSONObject dateIntaval) {
+		// TODO Auto-generated method stub
+		String startDate = "1970-01-01";
+		String otherCondition = "";
+		String endDate = DateUtil.getToday();
+		if(dateIntaval.containsKey("startDate"))
+			startDate = dateIntaval.getString("startDate");
+		if(dateIntaval.containsKey("endDate"))
+			endDate = dateIntaval.getString("endDate");
+		if(dateIntaval.containsKey("company"))
+			otherCondition = " and o.company='"+dateIntaval.getString("company")+"'";
+		otherCondition = otherCondition + " order by date desc,company";
+		return datastatisticsDAO.findScrollPage(0,Integer.MAX_VALUE," where o.date between '"+startDate+"' and '"+endDate+"'"+otherCondition);
+	}
+
+}

@@ -1,0 +1,163 @@
+package com.cmcc.gateway.SendThread;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
+
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+
+/**
+ * company : 副卡用户
+ * send to 新环境 EMR
+ * spareFlag : 1->2
+ */
+public class SecondCardSendDataThread implements Runnable {
+	private static String className = "SecondCardSendDataThread";
+	private static String send_path = Constants.EMR1PHR_OPENAPI;
+	/**
+	 * 只查询有副卡用户的数据
+	 */
+	private static String querySql = "SELECT u.secondCard ,p.* FROM packagedata p LEFT JOIN usertbl u ON  p.spareFlag='1'" +
+								" AND p.patientID=u.patientID WHERE u.secondCard IS NOT NULL AND u.secondCard !='' LIMIT 500;";
+	private String updateSql = "update packagedata set spareFlag='2',sendTime=NOW() where id=?";
+	private List<HashMap<String,String>> unSendList = null;
+	private Iterator<HashMap<String,String>> iterator = null;
+	private HashMap<String,String> map = null;
+	private boolean runFlag = true;
+	private String patientID = null;
+	private String secondCard = null;
+	@Override
+	public void run() {
+		while(runFlag)
+		{
+			//查询未发送的数据
+			unSendList = C3P0Util.getData(querySql);
+			Logger.writeLog(className+" running... query not send data sql is "+querySql);
+			iterator = unSendList.iterator();
+			while(iterator.hasNext())
+			{
+				map = iterator.next();
+				patientID = map.get("patientID");
+				secondCard = map.get("secondCard");
+				NameValuePair patientid = new NameValuePair("patientID" ,secondCard);
+				if("8-1".equals(map.get("packageNum")))
+				{
+					//方式1 未发送
+					NameValuePair STEP2NEWVALUE = new NameValuePair("data_newcontent_stepcount2" ,map.get("data_newcontent_stepcount2").replace(patientID, secondCard));
+					Logger.writeLog("send package 8-1 ... id="+map.get("id"));
+					if(sendHttpData(send_path,new NameValuePair[] {patientid,STEP2NEWVALUE}))
+					{
+					    boolean rebool = C3P0Util.insertOrUpdateData(updateSql,map.get("id"));
+					    if(rebool)
+					    	Logger.writeLog(className+" 8-1 send data successfully,and update packagedata is success");   
+					    else
+					    	Logger.writeLog(className+" 8-1 send data successfully,and update packagedata is fail");   
+					}else{
+					    Logger.writeLog(className+" 8-1 send data failure");           
+					}
+					
+				}
+				else if("8-2".equals(map.get("packageNum")))
+				{
+					//方式2 未发送
+				    NameValuePair STEP2NVALUE = new NameValuePair("STEP2NEWVALUE" ,map.get("STEP2NEWVALUE").replace(patientID, secondCard));
+				    NameValuePair packagedataID = new NameValuePair("packagedataID" ,map.get("id"));
+				    Logger.writeLog("send package 8-2 ...id="+map.get("id"));
+					if(sendHttpData(send_path,new NameValuePair[] {patientid,STEP2NVALUE,packagedataID}))
+					{
+					    boolean rebool = C3P0Util.insertOrUpdateData(updateSql,map.get("id"));
+					    if(rebool)
+					    	Logger.writeLog(className+" 8-2 send data successfully,and update packagedata is success.the sql is \r\n");   
+					    else
+					    	Logger.writeLog(className+" 8-2 send data successfully,and update packagedata is fail.the sql is \r\n");   
+					}else{
+					    Logger.writeLog(className+"send data failure");         
+					}
+					
+				}
+				else if("8-3".equals(map.get("packageNum")))
+				{
+					//方式3 未发送
+					NameValuePair STEP2NEWVALUE = new NameValuePair("data_newcontent_stepcount2" ,map.get("data_newcontent_stepcount2").replace(patientID, secondCard));
+					
+				    //   add by guoyh for PWS0006  20130731 ; send basestation info to plateform
+					NameValuePair locationInfo = new NameValuePair("locationInfo" ,map.get("location"));
+					Logger.writeLog("send package 8-3 ...id="+map.get("id"));
+					if(sendHttpData(send_path,new NameValuePair[] {patientid,STEP2NEWVALUE,locationInfo}))
+					{
+					    boolean rebool = C3P0Util.insertOrUpdateData(updateSql,map.get("id"));
+					    if(rebool)
+					    	Logger.writeLog(className+" 8-3 send data successfully,and update packagedata is success.the sql is \r\n");   
+					    else
+					    	Logger.writeLog(className+" 8-3 send data successfully,and update packagedata is fail.the sql is \r\n");
+					}else{
+					    Logger.writeLog(className+"send data failure");       
+					}
+					
+				}
+				else if("8-4".equals(map.get("packageNum")))
+				{
+					//方式4 未发送
+				    NameValuePair STEP3NVALUE = new NameValuePair("STEP3NEWVALUE" ,map.get("STEP3NEWVALUE").replace(patientID, secondCard));
+				    NameValuePair packagedataID = new NameValuePair("packagedataID" ,map.get("id"));
+				    Logger.writeLog("send package 8-4 ... id="+map.get("id"));
+					if(sendHttpData(send_path,new NameValuePair[] {patientid,packagedataID,STEP3NVALUE}))
+					{
+					    boolean rebool = C3P0Util.insertOrUpdateData(updateSql,map.get("id"));
+					    if(rebool)
+					    	Logger.writeLog(className+" 8-4 send data successfully,and update packagedata is success.the sql is \r\n");   
+					    else
+					    	Logger.writeLog(className+" 8-4 send data successfully,and update packagedata is fail.the sql is \r\n");
+					}else{
+					    Logger.writeLog(className+" send data failure");                
+					}
+				}
+			}
+			Logger.writeLog(className+" end...");
+			try {
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				Logger.errorLog("in method "+className+" interruption exception is \r\n"+e.getMessage());
+				e.printStackTrace();
+				Logger.writeLog(className+" is coming to the end");
+				return;
+			}
+		}
+	}
+	
+	private boolean sendHttpData(String url, NameValuePair[] parameter){
+		HttpClient client = new HttpClient(); 
+		PostMethod post = new PostMethod(url);
+		boolean isSuccess=true; 
+		try {
+			post.setRequestBody(parameter); 
+			Logger.writeLog(className+" send data : "+Arrays.deepToString(parameter));
+			//设置连接超时时间
+			client.getHttpConnectionManager().getParams().setConnectionTimeout(6000);
+			//设置响应超时时间
+			client.getHttpConnectionManager().getParams().setSoTimeout(15000);
+			int returnFlag = client.executeMethod(post);
+			if(returnFlag!=200){
+				isSuccess=false;
+			}
+			Logger.writeLog(className+" success receive form post: " + post.getStatusLine().toString()+ ",returnFlag="+returnFlag);      
+		} catch (Exception e) {
+			e.printStackTrace();
+			isSuccess=false;
+			Logger.writeLog(className+" fail receive form post: " +e.getMessage());      
+		}finally{
+			if(post!=null){
+				post.releaseConnection();
+				Logger.writeLog(className+" post.releaseConnection() " + "is coming");    				
+			}
+		}
+		return isSuccess;
+	}
+}

@@ -1,0 +1,40 @@
+package com.cmcc.monitor.aop;
+import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.JsonUtil;
+
+/**
+ * aop日志记录
+ */
+public class AspectLogger {
+	Logger logger = Logger.getLogger(this.getClass());
+	public Object record(ProceedingJoinPoint pjp){
+		logger.info("aop : begin call "+pjp.getTarget()+"."+pjp.getSignature().getName());
+		Log log = new Log();
+		try {
+			log.setOperName(pjp.getSignature().getName());//记录方法名
+			Object[] args = pjp.getArgs();
+			for(Object obj : args){
+				String parasJson =JsonUtil.objectToJson(obj);
+				log.setOperParams(parasJson);//记录参数信息
+			}
+			//调用目标方法
+			log.setOperBeginTime(DateUtil.getCurrentTime());
+			Object result = pjp.proceed();
+			log.setOperEndTime(DateUtil.getCurrentTime());
+			log.setOperResult("success");
+			return result;
+		} catch (Throwable e) {
+			//记录异常信息
+			logger.error(e);
+			log.setOperResult("failure");
+			log.setResultMsg(e.getMessage());
+		}finally{
+			logger.info("aop : "+log.toString());
+			logger.info("aop : end call "+pjp.getTarget()+"."+pjp.getSignature().getName());
+		}
+		return null;
+	}
+}

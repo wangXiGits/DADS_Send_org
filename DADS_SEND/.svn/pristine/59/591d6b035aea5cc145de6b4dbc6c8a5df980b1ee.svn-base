@@ -1,0 +1,74 @@
+package com.cmcc.gateway.SendThread;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.NameValuePair;
+
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.Util.Log;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+/**
+ * 日常运动数据发送线程
+ * sendFlag : 0->1
+ */
+public class DailyExerciseDataSendThread implements Runnable {
+	private static String className = "DailyExerciseDataSendThread";
+	private static String tableName = "dailyexercise";
+	private static String send_path = PropertiesReader.getProp("EMR_URL_DATA");
+	private static String querySql = "select * from "+tableName+" where sendFlag='0' limit 200";
+	private String sql = null;
+	private List<HashMap<String,String>> unSendList = null;
+	private Iterator<HashMap<String,String>> iterator = null;
+	private HashMap<String,String> map = null;
+	private boolean runFlag = true;
+	private JSONObject data = null;
+	@Override
+	public void run() {
+		while(runFlag)
+		{
+			//查询未发送的数据
+			unSendList = C3P0Util.getData(querySql);
+			Log.info(className+" running... query not send data sql is "+querySql);
+			iterator = unSendList.iterator();
+			while(iterator.hasNext())
+			{
+				map = iterator.next();
+				if(Constants.DATATYPE_DAILYEXERCISE.equals(map.get("dataType")))
+				{
+					data = new JSONObject();
+					data.put("appType", map.get("appType"));
+					data.put("dataType", map.get("dataType"));
+					data.put("collectDate", map.get("receiveTime"));
+					data.put("phone", map.get("phone"));
+					data.put("dataValue", map.get("dataValue"));
+					if(HttpClientUtil.sendHttpData(className,send_path,new NameValuePair[] {new NameValuePair("data", data.toString())}))
+					{
+					    sql = "update "+tableName+" set sendFlag='1',sendTime=NOW() where id="+map.get("id");
+					    boolean rebool = C3P0Util.executeUpdate(sql);
+					    if(rebool)
+					    	Log.info(className+" send data successfully,and update "+tableName+" successed.The sql is \r\n"+sql);   
+					    else
+					    	Log.info(className+" send data successfully,and update "+tableName+" failed.The sql is \r\n"+sql);   
+					}else{
+					    Log.info(className+" send data failure");
+					}
+				}
+			}
+			Log.info(className+" end...");
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				Log.error("in method "+className+" interruption exception is \r\n"+e.getMessage());
+				e.printStackTrace();
+				Log.info(className+" is coming to the end");
+				return;
+			}
+		}
+	}	
+}

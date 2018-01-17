@@ -1,0 +1,21 @@
+package com.cmcc.mina.component;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.packet.PackageData;
+/**
+ * 解码器组件根节点
+ */
+public class MHRootComponent extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		return true;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		return null;
+	}
+
+}

@@ -1,0 +1,26 @@
+package com.cmcc.monitor.Util;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.ActivateStatistics;
+import com.cmcc.monitor.base.Domain.Usertbl;
+public class UsertblUtil {
+	/**
+	 * 将Usertbl对象转为ActivateStatistics对象
+	 * @param usertblList1
+	 * @return
+	 * List<ActivateStatistics>
+	 */
+	public static List<ActivateStatistics> usertblToActivateSt(List<Usertbl> usertblList1) {
+		List<ActivateStatistics> asList = new ArrayList<ActivateStatistics>();
+		for (Usertbl u : usertblList1) {
+			ActivateStatistics as = new ActivateStatistics(u.getCompanyName(),u.getTeamName(),u.getPname(),u.getPatientId(),u.getDeviceId(),null,null,DateUtil.getCurrentTime());
+			as.setIsActivate("0".equals(u.getIsActivate())?"未激活":"已激活");
+			as.setIsUpload(u.getLastTime()==null?"未上传":"已上传");
+			as.setLastTime(u.getLastTime());
+			asList.add(as);
+		}
+		return asList;
+	}
+}

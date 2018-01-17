@@ -1,0 +1,65 @@
+<style type="text/css">
+    body {
+        background-color: white;
+    }
+    form {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-left: -141.25px;
+        margin-top: -88.875px;
+        padding: 2.5px;
+        width: 282.5px;
+        height: 182.5px;
+        text-align: center;
+        border-radius: 5px;
+        filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startcolorstr=#57a957, endcolorstr=#049cdb);
+        background: -ms-linear-gradient(left top, #57a957, #049cdb);
+        background: -moz-linear-gradient(left top, #57a957, #049cdb);
+        background: -webkit-linear-gradient(left top, #57a957, #049cdb);
+        box-shadow: 1px 1px 5px #57a957, 1px 1px 10px #049cdb;
+        /*animation: scale 4s;*/
+        /*-webkit-animation: scale 4s;*/
+        /*transition: transform 2s;*/
+        /*transition: -webkit-transform 2s;*/
+    }
+    @keyframes scale {
+        0%   {transform: scale(0, 0) rotate(0);top: 0}
+        100% {transform: scale(1, 1) rotate(360deg);top: 50%}
+    }
+    @-webkit-keyframes scale {
+        0%   {-webkit-transform: scale(0, 0) rotate(0);top: 0}
+        100% {-webkit-transform: scale(1, 1) rotate(360deg);top: 50%}
+    }
+    /*form:active {*/
+        /*transform: rotateX(180deg) rotateY(180deg);*/
+        /*-webkit-transform: rotateX(180deg) rotateY(180deg);*/
+    /*}*/
+    .text {
+        cursor: pointer;
+        text-shadow: 1px 1px rgba(197, 223, 248,0.8), 2px 2px rgba(197, 223, 248,0.8), 3px 3px rgba(197, 223, 248,0.8);
+    }
+    .text:hover {
+        -ms-animation: scaleSpan 1s;
+        -webkit-animation: scaleSpan 1s;
+    }
+    @-ms-keyframes scaleSpan {
+        0%   {-ms-transform: scale(1, 1)}
+        100% {-ms-transform: scale(1.5, 1.5)}
+    }
+    @-webkit-keyframes scaleSpan {
+        0%   {-webkit-transform: scale(1, 1)}
+        100% {-webkit-transform: scale(1.5, 1.5)}
+    }
+</style>
+
+<form class="form-horizontal">
+    <img src="img/logo3.png" alt="" style="width: 20px;margin-right: 10px;"/>
+    <img src="img/logo.png" alt="" style="width: 130px;margin: 5px 0;"/><br/>
+    <span class="help-inline text" style="color: white">账号：</span>
+    <input type="text" ng-model="userEmail"><br><br>
+    <span class="help-inline text" style="color: white">密码：</span>
+    <input type="password" ng-model="password"><br><br>
+    <button class="btn btn-success" ng-click="login()"><i class="icon-ok icon-white"></i>&nbsp;登录</button>
+    <button class="btn" style="margin-left: 15px;" ng-click="reset()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+</form>

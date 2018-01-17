@@ -1,0 +1,165 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.sql.Timestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * UserparaminfoGateway entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "userparaminfo_gateway")
+public class UserparaminfoGateway implements java.io.Serializable {
+
+	// Fields
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8600671318088177049L;
+	private String phone;
+	private String weight;
+	private String age;
+	private String height;
+	private String sex;
+	private Timestamp changetime;
+	private String needsend;
+	private String datafromip;
+	private String datafromdomain;
+	private String port;
+	private String autouploadtime;
+
+	// Constructors
+
+	/** default constructor */
+	public UserparaminfoGateway() {
+	}
+
+	/** minimal constructor */
+	public UserparaminfoGateway(String phone) {
+		this.phone = phone;
+	}
+
+	/** full constructor */
+	public UserparaminfoGateway(String phone, String weight, String age,
+			String height, String sex, Timestamp changetime, String needsend,
+			String datafromip, String datafromdomain, String port,
+			String autouploadtime) {
+		this.phone = phone;
+		this.weight = weight;
+		this.age = age;
+		this.height = height;
+		this.sex = sex;
+		this.changetime = changetime;
+		this.needsend = needsend;
+		this.datafromip = datafromip;
+		this.datafromdomain = datafromdomain;
+		this.port = port;
+		this.autouploadtime = autouploadtime;
+	}
+
+	// Property accessors
+	@Id
+	@Column(name = "phone", unique = true, nullable = false, length = 50)
+	public String getPhone() {
+		return this.phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	@Column(name = "weight", length = 50)
+	public String getWeight() {
+		return this.weight;
+	}
+
+	public void setWeight(String weight) {
+		this.weight = weight;
+	}
+
+	@Column(name = "age", length = 50)
+	public String getAge() {
+		return this.age;
+	}
+
+	public void setAge(String age) {
+		this.age = age;
+	}
+
+	@Column(name = "height", length = 50)
+	public String getHeight() {
+		return this.height;
+	}
+
+	public void setHeight(String height) {
+		this.height = height;
+	}
+
+	@Column(name = "sex", length = 1)
+	public String getSex() {
+		return this.sex;
+	}
+
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+
+	@Column(name = "changetime", length = 19)
+	public Timestamp getChangetime() {
+		return this.changetime;
+	}
+
+	public void setChangetime(Timestamp changetime) {
+		this.changetime = changetime;
+	}
+
+	@Column(name = "needsend", length = 1)
+	public String getNeedsend() {
+		return this.needsend;
+	}
+
+	public void setNeedsend(String needsend) {
+		this.needsend = needsend;
+	}
+
+	@Column(name = "datafromip", length = 50)
+	public String getDatafromip() {
+		return this.datafromip;
+	}
+
+	public void setDatafromip(String datafromip) {
+		this.datafromip = datafromip;
+	}
+
+	@Column(name = "datafromdomain", length = 50)
+	public String getDatafromdomain() {
+		return this.datafromdomain;
+	}
+
+	public void setDatafromdomain(String datafromdomain) {
+		this.datafromdomain = datafromdomain;
+	}
+
+	@Column(name = "port", length = 50)
+	public String getPort() {
+		return this.port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
+	@Column(name = "autouploadtime", length = 50)
+	public String getAutouploadtime() {
+		return this.autouploadtime;
+	}
+
+	public void setAutouploadtime(String autouploadtime) {
+		this.autouploadtime = autouploadtime;
+	}
+
+}

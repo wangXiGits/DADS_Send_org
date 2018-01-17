@@ -1,0 +1,66 @@
+package com.cmcc.send.observer.impl;
+
+import java.util.HashMap;
+
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.send.observer.Observer;
+import com.cmcc.send.observer.Subject;
+import com.cmcc.send.observer.util.CommonThread;
+import com.cmcc.send.observer.util.DatatypeInfoContext;
+import com.cmcc.send.observer.util.ThreadStateFlag;
+/**
+ * 各观察者具有相同的处理逻辑，只需要传入相应的参数
+ * <br>项目名称：DADS   
+ * <br>类名称：AbstractObserver   
+ * <br>类描述：暂无 
+ * <br>创建人：RCM
+ * <br>创建时间：2014-5-28 上午09:51:44   
+ * <br>修改人：
+ * <br>修改时间：
+ * <br>修改备注： 
+ * @version
+ */
+public abstract class AbstractObserver implements Observer{
+	/**
+	 * 抽象公共方法
+	 * @param subject
+	 * @param sendFlag
+	 * @param appType
+	 * @param sendPath
+	 * @param threadMap
+	 */
+	protected void commonUpdate(Subject subject,String sendFlag, String  appType,String sendPath,HashMap<String, CommonThread> threadMap) {
+		log.info(this.getClass().getSimpleName()+" 收到主题通知，开始发送数据...");
+		log.info("dataType="+subject.getDataType()+" appType="+subject.getAppType());
+		String dataType = subject.getDataType();
+		String tableName = DatatypeInfoContext.getTableNameByDatatype(dataType);
+		String sendWayList = PropertiesReader.getProp("sendWayList");
+		if(sendWayList==null){
+			log.info("未配置发送策略 sendWayList");
+			return;
+		}
+		String[] sendWayArray = sendWayList.split(",");
+		for (String sendWay : sendWayArray) {
+			String threadKey = appType+"_"+tableName+"_"+sendWay;
+			if(!"on".equals(PropertiesReader.getProp(sendWay+"_toggle"))){
+				continue;
+			}
+			synchronized (threadKey) {
+				if (threadMap.containsKey(threadKey)) {
+					CommonThread thread = threadMap.get(threadKey);
+					if (thread.isAlive()) {
+						log.info("已有线程在工作，不需重新开启：" + thread.getName());
+						continue;
+					}
+				}
+				// modify by rcm on 2014/06/18 appType->threadKey
+				CommonThread thread = new CommonThread(tableName, sendFlag,
+						appType, sendPath, ThreadStateFlag.getInstance(threadKey), sendWay);
+				thread.setName(threadKey);
+				log.info("开启新的发送线程:" + thread.getName());
+				thread.start();
+				threadMap.put(threadKey, thread);
+			}
+		}
+	}
+}

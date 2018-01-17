@@ -1,0 +1,12 @@
+package com.cmcc.monitor.Service;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.HealthData;
+import com.cmcc.monitor.base.Domain.PatientData;
+public interface MongoService {
+	public void save(HealthData healthData);
+	public void savePatientData(PatientData patientData);
+	public List<HealthData> findAll();
+}
+

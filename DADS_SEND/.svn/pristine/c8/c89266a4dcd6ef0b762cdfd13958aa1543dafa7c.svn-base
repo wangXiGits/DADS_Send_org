@@ -1,0 +1,71 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.UserstatisticsService;
+import com.cmcc.monitor.Service.UsertblService;
+import com.cmcc.monitor.Util.UsertblUtil;
+import com.cmcc.monitor.base.Domain.ActivateStatistics;
+import com.cmcc.monitor.base.Domain.Userstatistics;
+import com.cmcc.monitor.base.Domain.Usertbl;
+
+@Controller
+public class UserStatisticController extends BaseController{
+	private static Logger log = Logger.getLogger(UserStatisticController.class);	
+	@Autowired
+	private UserstatisticsService userstatisticsService;
+	@Autowired
+	private UsertblService usertblService;
+	
+	@RequestMapping(value="/getUserStatisticData.json",params={"data"})
+	public void getUserStatisticData(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+			JSONObject json = JSONObject.fromObject(data);
+			List<Userstatistics> list = userstatisticsService.getAllUserstatistics(json);
+			writeToClient(response,JSONArray.fromObject(list));
+		}
+	}
+	@RequestMapping(value="/getUserActivateInfo.json",params={"data"})
+	public void getUserActivateInfo(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+			JSONObject json = JSONObject.fromObject(data);
+			String isActivate = "";
+			String isUpload = "";
+			// isActivate = "1" 已激活
+			if(json.containsKey("isActivate") && "1".equals(json.getString("isActivate"))){
+				isActivate = "1";
+			}else{
+				isActivate = "0";
+			}
+			// isUpload = "1" 已上传
+			if(json.containsKey("isUpload") && "1".equals(json.getString("isUpload"))){
+				isUpload = " not null ";
+			}else{
+				isUpload = " null ";
+			}
+			String sql = " where o.deviceUseFlag='1' and o.isActivate='"+isActivate+"' and o.lastTime is "+isUpload+" ORDER BY companyName,deviceID";
+			List<Usertbl> list = usertblService.findScrollPage(1, 10000, sql);
+			List<ActivateStatistics> asList = UsertblUtil.usertblToActivateSt(list);
+			writeToClient(response,JSONArray.fromObject(asList));
+		}
+	}
+}

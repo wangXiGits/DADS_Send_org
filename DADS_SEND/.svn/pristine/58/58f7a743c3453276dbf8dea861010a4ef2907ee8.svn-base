@@ -1,0 +1,61 @@
+package com.cmcc.mina.codec;
+
+import org.apache.log4j.Logger;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.util.DataTypeChangeHelper;
+/**
+ * 
+ *	累加数据包解码器：解决断包、粘包问题 
+ */
+public class MyDecoder extends CumulativeProtocolDecoder {
+	public static Logger log = Logger.getLogger(MyDecoder.class);
+	/**
+	 * 包解码器组件
+	 */
+	private PacketFilterComponent packetFilterComponent;
+	 /** 
+     * 这个方法的返回值是重点： 
+     * 1、当内容刚好时，返回false，告知父类接收下一批内容 
+     * 2、内容不够时需要下一批发过来的内容，此时返回false，这样父类 CumulativeProtocolDecoder
+     *    会将内容放进IoSession中，等下次来数据后就自动拼装再交给本类的doDecode 
+     * 3、当内容多时，返回true，因为需要再将本批数据进行读取，父类会将剩余的数据再次推送本 
+     * 类的doDecode 
+     */  
+    public boolean doDecode(IoSession session, IoBuffer in,  
+            ProtocolDecoderOutput out) throws Exception {  
+    	log.info("in.remaining : "+in.remaining());
+        if(in.remaining() > 0){//有数据时，读取前8字节判断消息长度  
+            byte [] sizeBytes = new byte[8];  
+            in.mark();//标记当前位置，以便reset
+            in.get(sizeBytes,0,8);//读取4字节  
+                        //DataTypeChangeHelper是自己写的一个int转byte[]的一个工具类  
+            int size = (int) DataTypeChangeHelper.unsigned4BytesToInt(sizeBytes,4); 
+            log.info("size : "+size);
+            in.reset();
+            if(size > in.remaining()){//如果消息内容不够，则重置，相当于不读取size  
+                return false;//父类接收新数据，以拼凑成完整数据  
+            } else{  
+                byte[] bytes = new byte[size];   
+                in.get(bytes, 0, size); 
+                PackageData pack = packetFilterComponent.getDataFromBuffer(IoBuffer.wrap(bytes));
+                out.write(pack);
+                if(in.remaining() > 0){//如果读取内容后还粘了包，就让父类再重读  一次，进行下一次解析  
+                    return true;  
+                }  
+            }  
+        }  
+        return false;//处理成功，让父类进行接收下个包  
+    }
+	public PacketFilterComponent getPacketFilterComponent() {
+		return packetFilterComponent;
+	}
+	public void setPacketFilterComponent(PacketFilterComponent packetFilterComponent) {
+		this.packetFilterComponent = packetFilterComponent;
+	}
+}

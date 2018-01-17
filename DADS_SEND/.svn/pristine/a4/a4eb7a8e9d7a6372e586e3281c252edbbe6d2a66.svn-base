@@ -1,0 +1,41 @@
+package com.cmcc.mina.filter;
+
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.filterchain.IoFilterAdapter;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+
+/**
+ * 自定义解码过滤器
+ * 被可累加的解码器CumulativeProtocolDecoder取代
+ */
+@Deprecated
+public class ComponentIOFilter extends IoFilterAdapter {
+
+	private PacketFilterComponent packetFilterComponent;
+	
+	public ComponentIOFilter(PacketFilterComponent packetFilterComponent)
+	{
+		this.packetFilterComponent = packetFilterComponent;
+	}
+	@Override
+	public void messageReceived(NextFilter nextFilter, IoSession session,
+			Object message) throws Exception {
+		PackageData data = null;
+		if(message instanceof IoBuffer)
+		{
+			IoBuffer ioBuffer = (IoBuffer)message;
+			ioBuffer.setAutoExpand(true);
+			data = packetFilterComponent.getDataFromBuffer(ioBuffer);
+		}
+		if(data == null){
+			nextFilter.messageReceived(session, message);
+		}else{
+			nextFilter.messageReceived(session, data);
+		}
+		
+	}
+
+}

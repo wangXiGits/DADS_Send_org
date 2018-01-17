@@ -1,0 +1,110 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.ResetrecordDAO;
+import com.cmcc.monitor.Service.ResetrecordService;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.ResetPersonsPerDay;
+import com.cmcc.monitor.base.Domain.ResetTimesPerPerson;
+import com.cmcc.monitor.base.Domain.Resetrecord;
+
+@Service
+public class ResetrecordServiceImpl implements ResetrecordService {
+
+	@Autowired
+	private ResetrecordDAO resetrecordDAO;
+	/**
+	 * 查询每天数据异常用户信息
+	 */
+	@Override
+	public List<Resetrecord> getAllResetrecord(JSONObject dateIntaval){
+		String date = DateUtil.getDayAdd(DateUtil.getToday(), -1);
+		String otherCondition = "";
+		if(dateIntaval.containsKey("date"))
+			date = dateIntaval.getString("date");
+		//用户“郑臻”两个设备同一个ID
+		otherCondition = otherCondition + "and deviceID!='CMRI20130000258' order by deviceID asc";
+		return resetrecordDAO.findScrollPage(0,Integer.MAX_VALUE," where date(o.receiveTime) = '"+date+"' "+otherCondition);
+	}
+
+	/**
+	 * 导出每天数据异常用户信息
+	 */
+	@Override
+	public List<Resetrecord> getAllResetrecordPerDay(JSONObject json){
+		String date = DateUtil.getDayAdd(DateUtil.getToday(), -1);
+		String otherCondition = "";
+		if(json.containsKey("date"))
+			date = DateUtil.getDayAdd(json.getString("date"), -3);
+		//用户“郑臻”两个设备同一个ID
+		otherCondition = otherCondition + "and deviceID!='CMRI20130000258' order by receiveTime desc, deviceID asc";
+		return resetrecordDAO.findScrollPage(0,Integer.MAX_VALUE," where o.receiveTime > '"+date+"' "+otherCondition);
+	}
+	/**
+	 * 导出每天异常人数
+	 */
+	@Override
+	public List<ResetPersonsPerDay> getResetPersonsPerDayList(JSONObject json) {
+		List<HashMap<String,String>> list = null;
+		List<ResetPersonsPerDay> rppList = new ArrayList<ResetPersonsPerDay>();
+		String startDate = "2000-01-01";
+		String endDate = "3000-01-01";
+		if(json.containsKey("startDate") && !"".equals(json.getString("startDate")))
+		{
+			startDate = json.getString("startDate");
+		}
+		if(json.containsKey("endDate") && !"".equals(json.getString("endDate")))
+		{
+			endDate = json.getString("endDate");
+		}
+		try {
+			list = C3P0Util.getData("SELECT DATE(receiveTime) day, COUNT(DISTINCT patientID) patientNum FROM resetrecord where receiveTime between '"+startDate+"' and '"+endDate+"' and deviceID!='CMRI20130000258' GROUP BY DATE(receiveTime) ORDER BY day DESC,teamName");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		for (HashMap<String,String> map : list) {
+			ResetPersonsPerDay rtp = new ResetPersonsPerDay(map.get("day"),map.get("patientNum"));
+			rppList.add(rtp);
+		}
+		return rppList;
+	}
+	/**
+	 * 导出每人异常次数	
+	 */
+	@Override
+	public List<ResetTimesPerPerson> getResetTimesPerPersonList(JSONObject json) {
+		List<HashMap<String,String>> list = null;
+		List<ResetTimesPerPerson> rtpList = new ArrayList<ResetTimesPerPerson>();
+		String startDate = "2000-01-01";
+		String endDate = "3000-01-01";
+		if(json.containsKey("startDate") && !"".equals(json.getString("startDate")))
+		{
+			startDate = json.getString("startDate");
+		}
+		if(json.containsKey("endDate") && !"".equals(json.getString("endDate")))
+		{
+			endDate = json.getString("endDate");
+		}
+		try {
+			list = C3P0Util.getData("SELECT deviceID,companyName,teamName,pname,patientID,COUNT(DISTINCT DATE(receiveTime)) times FROM resetrecord where receiveTime between '"+startDate+"' and '"+endDate+"' and deviceID!='CMRI20130000258' GROUP BY (deviceID) order by times desc");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		for (HashMap<String,String> map : list) {
+			ResetTimesPerPerson rtp = new ResetTimesPerPerson(map.get("companyName"),map.get("teamName"),map.get("pname"),map.get("patientID"),map.get("deviceID"),map.get("times"));
+			rtpList.add(rtp);
+		}
+		return rtpList;
+	}
+}

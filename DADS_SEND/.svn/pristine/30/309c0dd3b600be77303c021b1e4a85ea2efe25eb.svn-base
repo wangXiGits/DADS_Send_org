@@ -1,0 +1,65 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.ResetrecordService;
+import com.cmcc.monitor.base.Domain.ResetPersonsPerDay;
+import com.cmcc.monitor.base.Domain.ResetTimesPerPerson;
+import com.cmcc.monitor.base.Domain.Resetrecord;
+
+@Controller
+public class ResetrecordController extends BaseController{
+	private static Logger log = Logger.getLogger(ResetrecordController.class);	
+	@Autowired
+	private ResetrecordService resetrecordService;
+	
+	@RequestMapping(value="/getResetrecordData.json",params={"data"})
+	public void getResetrecordData(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+			JSONObject json = JSONObject.fromObject(data);
+			List<Resetrecord> list = resetrecordService.getAllResetrecord(json);
+			writeToClient(response,JSONArray.fromObject(list));
+		}
+	}
+	
+	@RequestMapping(value="/getResetTimesPerPerson.json",params={"data"})
+	public void getResetTimesPerPerson(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+			JSONObject json = JSONObject.fromObject(data);
+			List<ResetTimesPerPerson> list = resetrecordService.getResetTimesPerPersonList(json);
+			writeToClient(response,JSONArray.fromObject(list));
+		}
+	}
+	
+	@RequestMapping(value="/getResetPersonsPerDay.json",params={"data"})
+	public void getResetPersonsPerDay(HttpServletRequest request,HttpServletResponse response)
+	{
+		String data = request.getParameter("data");
+		log.info("parameter data="+data);
+		if(!"".equals(data))
+		{
+			JSONObject json = JSONObject.fromObject(data);
+			List<ResetPersonsPerDay> list = resetrecordService.getResetPersonsPerDayList(json);
+			writeToClient(response,JSONArray.fromObject(list));
+		}
+	}
+}

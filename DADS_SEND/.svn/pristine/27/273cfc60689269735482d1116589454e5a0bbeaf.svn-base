@@ -1,0 +1,78 @@
+package com.cmcc.mina.server;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
+import org.apache.log4j.Logger;
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.filter.executor.ExecutorFilter;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+
+import com.cmcc.mina.component.JiaysHeadCheckerComponent;
+import com.cmcc.mina.component.MilinkBPHeadCheckerComponent;
+import com.cmcc.mina.component.MilinkSportsHeadCheckerComponent;
+import com.cmcc.mina.component.jiays.impl.LogoutParer;
+import com.cmcc.mina.component.jiays.impl.No1LoginParer;
+import com.cmcc.mina.component.jiays.impl.No8BPBSParer;
+import com.cmcc.mina.component.jiays.impl.No8SportsParer;
+import com.cmcc.mina.component.milink.bloodpressure.impl.BPNo1LoginParer;
+import com.cmcc.mina.component.milink.bloodpressure.impl.BPNo4SynsTimeParer;
+import com.cmcc.mina.component.milink.bloodpressure.impl.BPNo8DataParer;
+import com.cmcc.mina.component.milink.sport.impl.LoginDataParser;
+import com.cmcc.mina.component.milink.sport.impl.No8FourWayParser;
+import com.cmcc.mina.component.milink.sport.impl.No8OneWayParser;
+import com.cmcc.mina.component.milink.sport.impl.No8ThreeWayParser;
+import com.cmcc.mina.component.milink.sport.impl.No8TwoWayParser;
+import com.cmcc.mina.component.milink.sport.impl.SportLogoutParser;
+import com.cmcc.mina.filter.ComponentIOFilter;
+import com.cmcc.mina.handler.StrategyFactoryHandler;
+
+public class MinaServer {
+	
+	private static Logger log = Logger.getLogger(MinaServer.class);
+	public static void  main(String[] args) throws IOException
+	{
+		IoAcceptor acceptor = new NioSocketAcceptor(10);
+		//1.组装解码器
+		MilinkSportsHeadCheckerComponent milinkSportsComponent = new MilinkSportsHeadCheckerComponent();
+		//1.1盟联计步器解码器
+		milinkSportsComponent.add(new LoginDataParser());
+		milinkSportsComponent.add(new No8OneWayParser());
+		milinkSportsComponent.add(new SportLogoutParser());
+		milinkSportsComponent.add(new No8TwoWayParser());
+		milinkSportsComponent.add(new No8ThreeWayParser());
+		milinkSportsComponent.add(new No8FourWayParser());
+		
+		//1.2盟联血压计解码器
+		MilinkBPHeadCheckerComponent milinkBPComponent = new MilinkBPHeadCheckerComponent();
+		milinkBPComponent.add(new BPNo1LoginParer());
+		milinkBPComponent.add(new BPNo4SynsTimeParer());
+		milinkBPComponent.add(new BPNo8DataParer());
+		
+		//1.3佳医在线一次测量数据解码器
+		JiaysHeadCheckerComponent jiaysComponent = new JiaysHeadCheckerComponent();
+		jiaysComponent.add(new No1LoginParer());
+		jiaysComponent.add(new No8BPBSParer());
+		jiaysComponent.add(new No8SportsParer());
+		jiaysComponent.add(new LogoutParer());
+		
+		//2.设置解码器
+		acceptor.getFilterChain().addLast("milinkSportsComponent", new ComponentIOFilter(milinkSportsComponent));
+		acceptor.getFilterChain().addLast("milinkBPComponent", new ComponentIOFilter(milinkBPComponent));
+		acceptor.getFilterChain().addLast("jiaysComponent", new ComponentIOFilter(jiaysComponent));
+		acceptor.getFilterChain().addLast("executors", new ExecutorFilter());  //多线程处理业务逻辑
+		acceptor.getSessionConfig().setIdleTime(IdleStatus.READER_IDLE,60*10); //读 通道在10 分钟内无任何操作就进入空闲状态
+		
+		//3.添加业务逻辑处理器
+		acceptor.setHandler(new StrategyFactoryHandler());
+		//4.绑定监听端口
+		acceptor.bind(new InetSocketAddress(8889));
+		// 开启发送线程
+//		new Thread(new BPDataSendThread()).start();
+//		new Thread(new BSDataSendThread()).start();
+//		new Thread(new DailyExerciseDataSendThread()).start();
+//		new Thread(new HeartFunctionDataSendThread()).start();
+		log.info("Server is running...listening port 8889...");
+	}
+}

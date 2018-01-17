@@ -1,0 +1,29 @@
+<div header></div>
+    <div class="p_7">
+        <button class="btn btn-info" ng-click="openThread()">开启发送线程</button>
+    </div>
+    <threadchart style="width: 600px;height: 300px;margin: 0 auto;"></threadchart>
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <td class="td" style="width: 27.5%;background-color: #cde3f6;text-align: center">名称</td>
+            <td class="td" style="width: 27.5%;background-color: #cde3f6;text-align: center">状态</td>
+            <td class="td" style="width: 27.5%;background-color: #cde3f6;text-align: center">说明（IP）</td>
+            <td class="td" style="background-color: #cde3f6;text-align: center">操作（<a style="cursor: pointer" ng-click="unClock()">解锁</a>）</td>
+        </tr>
+        <tr ng-repeat="item in data">
+            <td style="text-align: center">{{ item.threadName }}</td>
+            <td style="text-align: center">{{ item.threadState.replace('RUNNABLE', '运行').replace('TERMINATED', '终止').replace('NEW', '就绪').replace('BLOCKED', '阻塞').replace('TIMED_WAITING', '等待').replace('WAITING', '等待') }}</td>
+            <td style="text-align: center">
+                {{ item.threadName.replace('cmccPHRSendThread', '10.1.5.183')
+                .replace('cmgcSendThread', '218.206.179.71')
+                .replace('emr2PHRSendDataThread', '218.206.179.60')
+                .replace('mhealthSendDataThread', '10.1.5.191')
+                .replace('phrSendThread', '10.1.5.184')
+                .replace('phrTestSendThread', '10.1.5.184/191')
+                .replace('otherTaskThread','')
+                .replace('realTimeMonitorTimer','') }}
+            </td>
+            <td style="text-align: center"><input type="checkbox" switch data="{{ item.threadState }}" name="{{ item.threadName }}"/></td>
+        </tr>
+    </table>
+<div footer></div>

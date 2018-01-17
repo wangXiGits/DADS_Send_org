@@ -1,0 +1,32 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.MongoDAO;
+import com.cmcc.monitor.Service.MongoService;
+import com.cmcc.monitor.base.Domain.HealthData;
+import com.cmcc.monitor.base.Domain.PatientData;
+@Service("mongoService")
+public class MongoServiceImpl implements MongoService {
+	private static Logger log = Logger.getLogger(MongoServiceImpl.class);
+	@Autowired
+	private MongoDAO mongoDAO;
+	@Override
+	public void save(HealthData healthData) {
+		log.debug("begin to save healthData");
+		this.mongoDAO.insert(healthData);
+		log.debug("end to save healthData");
+	}
+	@Override
+	public List<HealthData> findAll() {
+		return this.mongoDAO.findAll();	
+	}
+	@Override
+	public void savePatientData(PatientData patientData) {
+		this.mongoDAO.insertPatient(patientData);
+	}
+}

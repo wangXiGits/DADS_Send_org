@@ -1,0 +1,77 @@
+package com.cmcc.mina.strategy;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.state.milink.BloodPressurePacketHandleState;
+import com.cmcc.mina.state.milink.bloodpressure.impl.BPNo1LoginState;
+import com.cmcc.mina.state.milink.bloodpressure.impl.BPNo4SynsTimeState;
+import com.cmcc.mina.state.milink.bloodpressure.impl.BPNo8DataState;
+
+public class MilinkloodPressurePacketHandleStrategy implements MHDataPacketHandleStrategy {
+
+	private static Map<String, String> stateMap = new HashMap<String, String>();
+	@SuppressWarnings("rawtypes")
+	private static Map<String,Class> classMap = new HashMap<String, Class>();
+	static
+	{
+		stateMap.put("login", "no8");
+//		stateMap.put("no4", "no8");
+		
+		classMap.put("login", BPNo1LoginState.class);
+//		classMap.put("no4", BPNo4SynsTimeState.class);
+		classMap.put("no8", BPNo8DataState.class);
+	}
+	@Override
+	public boolean handle(IoSession session, Object message) {
+		log.info(this.getClass().getSimpleName()+".handle() begin...");
+		BloodPressurePacketHandleState state = null;
+		boolean result = false;
+		try {
+			state = getNextRealState(session,(PackageData)message);
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
+		if(state!=null){
+			result = state.handlePacket(session,message);
+		}else{
+			log.info("状态为空！");
+		}
+			
+		if(result)
+		{
+			//处理成功时，进入下一状态
+			session.setAttribute("currState", getNextState(session,null));
+		}
+		log.info(this.getClass().getSimpleName()+".handle() end.");
+		return result;
+	}
+	@Override
+	public String getNextState(IoSession session,PackageData pack)
+	{
+		if(session.containsAttribute("currState")==false)
+		{
+			return "login";
+		}else
+		{
+			return stateMap.get(session.getAttribute("currState"));
+		}
+	}
+	@Override
+	public BloodPressurePacketHandleState getNextRealState(IoSession session,PackageData pack) throws InstantiationException, IllegalAccessException
+	{
+		BloodPressurePacketHandleState dataState = null;
+		String state = getNextState(session,null);
+		if(classMap.get(state)!=null)
+			dataState =  (BloodPressurePacketHandleState) classMap.get(state).newInstance();
+		
+		return dataState;
+	}
+}

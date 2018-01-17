@@ -1,0 +1,190 @@
+package com.cmcc.gateway.restful.Contorller;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+import com.cmcc.monitor.Util.OldSportDataHandleUtil;
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.monitor.Util.ValidateUtil;
+import com.cmcc.monitor.api.Controller.BaseController;
+import com.cmcc.send.observer.impl.SubjectFactory;
+/**
+ * restful接口，上下文后面需要统一加上一层路径：/service
+ * @author rcm
+ */
+@Controller
+public class SportDataController extends BaseController{
+	private static Logger log = Logger.getLogger(SportDataController.class);
+	private static String yuanp5 = "{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'}";
+	/**
+	 * 运动数据上传接口
+	 * @param apptype 应用类型
+	 * @param datatype 数据类型
+	 * @param deviceid 设备编号
+	 * @param collectdate 上传时间
+	 * @param datavalue 数据内容
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping(method=RequestMethod.POST, value="/uploadSportsDatas",params={"datas"})
+	public void uploadSportsDatas(HttpServletRequest request,HttpServletResponse response){
+		log.info("the begin of uploadSportsDatas...");
+		long beginTime = System.currentTimeMillis();
+		log.debug("请求开始时间："+beginTime);
+		JSONObject result = null;
+		if("true".equals(PropertiesReader.getProp("isNewSport"))){
+			result = handleNewSport(request);
+		}else{
+			result = handleOldSport(request);
+		}
+        log.info("the end of uploadSportsDatas.");
+        log.debug("请求结束，共耗时："+(System.currentTimeMillis()-beginTime)+" ms");
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 以旧协议格式存储运动数据
+	 * @param request
+	 * @return
+	 */
+	private JSONObject handleOldSport(HttpServletRequest request) {
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("datas").toString();
+		log.info("datas = "+param);
+		try {
+			JSONObject map = JSONObject.fromObject(param);
+			String deviceType = map.getString("company");
+			log.info("deviceType="+deviceType);
+			JSONObject data = map.getJSONObject("data");
+			String datatype = data.getString("dataType");
+			if(Constants.DATATYPE_STEPDETAIL.equalsIgnoreCase(datatype)){
+				OldSportDataHandleUtil.handleStepDetail(data,result);
+			}else if(Constants.DATATYPE_STEPEFFECTIVE.equalsIgnoreCase(datatype)){
+				OldSportDataHandleUtil.handleStepEffective(data,result);
+			}else if(Constants.DATATYPE_STEPCOUNT.equalsIgnoreCase(datatype)){
+				OldSportDataHandleUtil.handleStepCount(data,result);
+			}else{
+				log.info("无效数据包");
+				result.put("status", "FAIL");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAIL");
+			result.put("info", "数据格式错误");
+		}
+		log.info(result.toString());
+		return result;
+	}
+	/**
+	 * 以新协议格式存储运动数据
+	 * @param request
+	 * @return
+	 */
+	private JSONObject handleNewSport(HttpServletRequest request) {
+		String tablename="sports";
+		log.info("the begin of handleNewSport...");
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("datas");
+		log.info("datas length = "+param.length());
+		log.debug("datas："+param);
+		try {
+			JSONObject data = JSONObject.fromObject(param).getJSONObject("data");
+			String dataType = data.getString("dataType");
+			if(Constants.DATATYPE_STEPCOUNT.equals(dataType) ||
+					Constants.DATATYPE_STEPDETAIL.equals(dataType) ||
+					Constants.DATATYPE_STEPEFFECTIVE.equals(dataType)){
+				
+				String appType = data.getString("appType");
+				String deviceId = data.getString("deviceId");
+				String collectDate = data.getString("collectDate");
+				JSONArray dataValue = data.getJSONArray("dataValue");
+				log.info("apptype="+appType+", datatype="+dataType+", deviceId="+deviceId+", collectdate="+collectDate);
+				if(ValidateUtil.paramCheck(appType,deviceId,collectDate,dataType)){
+					String phone = DeviceIDResolver.searchPatientidByDeviceid(deviceId);
+					appType = DeviceIDResolver.searchAppTypeByDeviced(deviceId);
+					log.info("获取到手机号："+phone);
+					if(ValidateUtil.paramCheck(phone)){
+						boolean ret = false;
+						if(Constants.DATATYPE_STEPCOUNT.equals(dataType)){
+							log.info("存储简要包数据！--新协议");
+							ret = saveSportData(tablename, data, phone, deviceId, appType, dataType, collectDate, dataValue.toString());
+						}else{
+							if(dataValue.size()==0){
+								ret = true;
+							}else if(dataValue.get(0) instanceof JSONObject){
+								log.info("单个小时数据！--新协议");
+								if(!dataValue.getJSONObject(5).containsKey("yuanp5")){
+									dataValue.add(5, JSONObject.fromObject(yuanp5));
+									log.debug("原始数据未包含 yuanp5");
+								}
+								ret = saveSportData(tablename, data, phone, deviceId, appType, dataType, collectDate, dataValue.toString());
+							}else{
+								log.info("多个小时数据！--新协议");
+								for(int i=0;i<dataValue.size();i++){
+									JSONArray ja = dataValue.getJSONArray(i);
+									if(!ja.getJSONObject(5).containsKey("yuanp5")){
+										ja.add(5, JSONObject.fromObject(yuanp5));
+										log.debug("原始数据未包含 yuanp5");
+									}
+									ret = saveSportData(tablename, data, phone, deviceId, appType, dataType, collectDate, ja.toString());
+								}
+							}
+						}
+						if(ret){
+							//通过观察者发送数据
+							SubjectFactory.getSubject(appType, dataType).notifyObserver();
+							result.put("status", "SUCCESS");
+						}else{
+							result.put("status", "FAIL");
+						}
+					}else{
+						result.put("status", "FAIL");
+						result.put("info", "设备号未注册");
+					}
+				}else{
+					result.put("status", "FAIL");
+					result.put("info", "参数信息不完整");
+				}
+			}else{
+				result.put("info", "无效数据包");
+				result.put("status", "FAIL");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			result.put("status", "FAILURE");
+			result.put("info", "数据格式错误");
+		}
+		log.info(result.toString());
+		return result;
+	}
+	/**
+	 * 存储新协议格式运动数据
+	 * @param tablename
+	 * @param data
+	 * @param phone
+	 * @param deviceId
+	 * @param appType
+	 * @param dataType
+	 * @param collectDate
+	 * @param dataValue
+	 * @return
+	 */
+	private static boolean saveSportData(String tablename, JSONObject data, String phone,
+			String deviceId, String appType, String dataType, String collectDate,
+			String dataValue) {
+		String sql = "insert into  "+tablename+"(phone,deviceId,appType,dataType,realTime,dataValue,deviceType,receiveTime) values(?,?,?,?,?,?,?,now())";
+		boolean ret = C3P0Util.insertOrUpdateData(sql, phone,deviceId,appType,dataType,collectDate,dataValue,"PHONE");
+		return ret;
+	}
+}

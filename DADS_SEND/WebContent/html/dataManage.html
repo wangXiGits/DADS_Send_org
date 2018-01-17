@@ -1,0 +1,163 @@
+<div header></div> 
+<div spin style="position: absolute;top: 375px;left: 405px;width: 150px;height: 150px" ng-show="loading"></div>
+<button class="btn btn-warning" style="float:right;margin-bottom: 20px;margin-right: 10px;" ng-click="unClock()"><i class="icon-search">&nbsp;</i>解锁</button>
+<button class="btn btn-warning" style="float:right;margin-bottom: 20px;margin-right: 10px;" ng-click="del()" ng-disabled="status"><i class="icon-search">&nbsp;</i>删除</button>
+<button class="btn btn-primary" style="float:right;margin-bottom: 20px;margin-right: 10px;" ng-click="edit()" ng-disabled="status"><i class="icon-search">&nbsp;</i>修改</button>
+<button class="btn btn-success" style="float:right;margin-bottom: 20px;margin-right: 10px;" ng-click="send()" ng-disabled="status"><i class="icon-search">&nbsp;</i>重发</button>
+<button class="btn btn-info" style="float:right;margin-bottom: 20px;margin-right: 10px;" ng-click="modelShow=true"><i class="icon-search">&nbsp;</i>详查</button>
+<div class="input-prepend" style="float: right;margin-right: 10px;">
+    <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+    <input type="text" style="width: 120px;" autofocus placeholder="类型" ng-model="filterType.packageNum" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+</div>
+<div class="input-prepend" style="float: right;margin-right: 10px;">
+    <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+    <input type="text" style="width: 120px;" autofocus placeholder="接收时间" ng-model="filterType.receiveTime" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+</div>
+<div class="input-prepend" style="float: right;margin-right: 10px;">
+    <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+    <input type="text" style="width: 120px;" autofocus placeholder="用户" ng-model="filterType.patientId" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+</div>
+<div style="min-height: 512px">
+    <table class="table table-striped table-bordered table-hover" ng-init="reset();update()">
+        <tr>
+            <td style="width: 3.75%;background-color: #cde3f6;text-align: center"><input type="checkbox" style="position: relative;top: -3px;" ng-model="check" ng-click="updateCheck()"/></td>
+            <td class="td" style="width: 10%;background-color: #cde3f6;text-align: center">部门</td>
+            <td class="td" style="width: 12.5%;background-color: #cde3f6;text-align: center">用户</td>
+            <td class="td" style="width: 18.75%;background-color: #cde3f6;text-align: center">接收时间</td>
+            <td class="td" style="width: 18.75%;background-color: #cde3f6;text-align: center">发送时间</td>
+            <td class="td" style="width: 9.16%;background-color: #cde3f6;text-align: center">数据包</td>
+            <td class="td" style="width: 9.16%;background-color: #cde3f6;text-align: center">类型</td>
+            <td class="td" style="width: 8.75%;background-color: #cde3f6;text-align: center">总共步数</td>
+            <td class="td" style="background-color: #cde3f6;text-align: center">备注</td>
+        </tr>
+        <tr ng-repeat="item in data | filter: filterType" ng-show="item.show">
+            <td style="text-align: center"><input type="checkbox" ng-model="item.check"/></td>
+            <td style="text-align: center">{{ item.company }}</td>
+            <td style="text-align: center">{{ item.patientId }}</td>
+            <td style="text-align: center">{{ item.receiveTime }}</td>
+            <td style="text-align: center">{{ item.sendTime }}</td>
+            <td style="text-align: center">
+                <span tooltip="{{item.dataNewcontentStepcount2||item.step2newvalue||item.step3newvalue}}" ng-if="item.packageNum=='8-1'">历史包</span>
+                <span tooltip="{{item.dataNewcontentStepcount2||item.step2newvalue||item.step3newvalue}}" ng-if="item.packageNum=='8-2'">详细包</span>
+                <span tooltip="{{item.dataNewcontentStepcount2||item.step2newvalue||item.step3newvalue}}" ng-if="item.packageNum=='8-3'">简要包</span>
+                <span tooltip="{{item.dataNewcontentStepcount2||item.step2newvalue||item.step3newvalue}}" ng-if="item.packageNum=='8-4'">有效步数</span>
+            </td>
+            <td style="text-align: center">{{ item.packageNum }}</td>
+            <td style="text-align: center">{{ item.totalSteps }}</td>
+            <td style="text-align: center">{{ item.sendFlag }}</td>
+        </tr>
+    </table>
+    <span style="float: left;position: relative;top: 2px;margin-left: 10px;">
+    	提示：共<font style="color: red">{{ Data.noOfPages($eval(filterData).length) }}</font>页，
+    	共<font style="color: red">{{ $eval(filterData).length }}</font>条记录
+    </span>
+	<div style="opacity: 0" ng-show="$eval(filterData).length<=20">0</div>
+    <div style="width: 100%;text-align: right;" ng-show="$eval(filterData).length>20">
+        <pagination num-pages="Data.noOfPages($eval(filterData).length)" current-page="currentPage" max-size="maxSize"
+                    on-select-page="Data.selectPage($eval(filterData), page)" boundary-links="true" first-text="'首页'"
+                    previous-text="'上页'" next-text="'下页'" last-text="'尾页'"></pagination>
+    </div>
+</div>
+<div footer></div>
+<div modal="modelShow" options="opts">
+    <div class="modal-header" style="text-align: center">
+        <strong ng-show="$parent.type!='add'">查询条件</strong>
+        <button class="close" ng-click="modelShow=false">×</button>
+    </div>
+    <div class="modal-body">
+        <div spin style="position: absolute;top: 105px;left: 290px;width: 150px;height: 150px" ng-show="loading"></div>
+        <div>
+            <form class="form-horizontal" style="margin: 0 auto;width: 655px">
+                <table style="margin: 0 auto">
+                    <tr>
+                        <td>开始接收日期：</td>
+                        <td><input type="text" ng-model="obj.beginRecTime"/></td>
+                    </tr>
+                    <tr>
+                        <td>结束接收日期：</td>
+                        <td><input type="text" ng-model="obj.endRecTime"/></td>
+                    </tr>
+                    <tr>
+                        <td>开始发送日期：</td>
+                        <td><input type="text" ng-model="obj.beginSendTime"/></td>
+                    </tr>
+                    <tr>
+                        <td>结束发送日期：</td>
+                        <td><input type="text" ng-model="obj.endSendTime"/></td>
+                    </tr>
+                    <tr>
+                        <td>手机：</td>
+                        <td><input type="text" ng-model="obj.patientId"/></td>
+                    </tr>
+                    <tr>
+                        <td>包编号：</td>
+                        <td><input type="text" ng-model="obj.packNum"/></td>
+                    </tr>
+                    <tr>
+                        <td>设备ID：</td>
+                        <td><input type="text" ng-model="obj.deviceId"/></td>
+                    </tr>
+                    <tr>
+                        <td>发送状态：</td>
+                        <td><input type="text" ng-model="obj.sendFlag"/></td>
+                    </tr>
+                    <tr>
+                        <td>所属单位：</td>
+                        <td><input type="text" ng-model="obj.company"/></td>
+                    </tr>
+                    <tr>
+                        <td>查询数量：</td>
+                        <td><input type="text" ng-model="obj.pageSize"/></td>
+                    </tr>
+                </table>
+                <div align="center" style="margin-top: 15px;">
+                    <button class="btn btn-info" ng-click="update()"><i class="icon-edit"></i>&nbsp;查询</button>
+                    <button class="btn" style="margin-left: 10px;" ng-click="reset()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div modal="modelShow2" options="opts">
+    <div class="modal-header" style="text-align: center">
+        <strong ng-show="$parent.type!='add'">{{ editData.patientId }}</strong>
+        <button class="close" ng-click="modelShow=false">×</button>
+    </div>
+    <div class="modal-body">
+        <div spin style="position: absolute;top: 105px;left: 290px;width: 150px;height: 150px" ng-show="loading"></div>
+        <div>
+            <form class="form-horizontal" style="margin: 0 auto;width: 655px">
+                <table style="margin: 0 auto">
+                    <tr>
+                        <td>部门：</td>
+                        <td><input type="text" ng-model="editData.company"/></td>
+                    </tr>
+                    <tr>
+                        <td>用户：</td>
+                        <td><input type="text" ng-model="editData.patientId"/></td>
+                    </tr>
+                    <tr>
+                        <td>数据：</td>
+                        <td><input type="text" ng-model="editData.dataNewcontentStepcount2"/></td>
+                    </tr>
+                    <tr>
+                        <td>类型：</td>
+                        <td><input type="text" ng-model="editData.packageNum"/></td>
+                    </tr>
+                    <tr>
+                        <td>标识：</td>
+                        <td><input type="text" ng-model="editData.flag"/></td>
+                    </tr>
+                    <tr>
+                        <td>总共步数：</td>
+                        <td><input type="text" ng-model="editData.totalSteps"/></td>
+                    </tr>
+                </table>
+                <div align="center" style="margin-top: 15px;">
+                    <button class="btn btn-info" ng-click="updateData()"><i class="icon-edit"></i>&nbsp;修改</button>
+                    <button class="btn" style="margin-left: 10px;" ng-click="editReset()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

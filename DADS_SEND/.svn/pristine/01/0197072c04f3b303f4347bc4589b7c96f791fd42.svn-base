@@ -1,0 +1,308 @@
+package com.cmcc.monitor.test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.log4j.Logger;
+import org.junit.Test;
+
+import com.cmcc.Util.DataSimulatorUtil;
+import com.cmcc.Util.ReadFileUtil;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.MyRandomUtil;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+public class SimulateDataTest {
+	private static Logger log = Logger.getLogger(SimulateDataTest.class);
+	private static String appType = "ALL";
+	private static String address = PropertiesReader.getProp("testUrl");
+	private String deviceId = PropertiesReader.getProp("testDeviceId");
+	private String collectDate = DateUtil.getCurrentTime();
+	private String measureTime = DateUtil.getCurrentTime();
+	/**
+	 * 血压
+	 */
+	@Test
+	public void bloodpressuredata() {
+		int heartrate = MyRandomUtil.getInt(60, 90);
+		int systolic = MyRandomUtil.getInt(100, 140);
+		int diastolic = MyRandomUtil.getInt(60, 90);
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'bloodPressure','dataValue':[{'measureTime':'"+measureTime+"'},{'heartrate':'"+heartrate+"'},{'systolic':'"+systolic+"'}," +
+				"{'diastolic':'"+diastolic+"'}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(
+				address+"/service/uploadBloodpressureDatas",
+				"datas", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	/**
+	 * 餐前血糖
+	 */
+	@Test
+	public void Beforebloodglucosedata() {
+		float beforeMeal = MyRandomUtil.getFloat(4, 8);
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'bloodGlucose','dataValue':[{'measureTime':'"+DateUtil.addMinutes(measureTime, -30)+"'},{'afterMeal':0},{'beforeMeal':'"+beforeMeal+"'},{'type':0}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadBloodglucoseDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 餐后血糖
+	 */
+	@Test
+	public void Afterbloodglucosedata() {
+		float afterMeal = MyRandomUtil.getFloat(8, 16);
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'bloodGlucose','dataValue':[{'measureTime':'"+measureTime+"'},{'afterMeal':'"+afterMeal+"'},{'beforeMeal':'0'},{'type':1}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadBloodglucoseDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 体重
+	 */
+	@Test
+	public void weightdata() {
+		float bodyWeight = MyRandomUtil.getFloat(79, 81);
+		String value = "{'data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"	+collectDate+"','dataType':'weight','dataValue'" +
+				":[{'measureTime':'"+measureTime+"'},{'bodyWeight':'"+bodyWeight+"'}]},'password':'123','company':'mljb'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadWeightDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 血氧
+	 */
+	@Test
+	public void spo2data() {
+		int pulse = MyRandomUtil.getInt(60, 80);
+		int oxygen = MyRandomUtil.getInt(110, 130);
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'SPO2','dataValue':[{'measureTime':'"+measureTime+"'},{'pulse':'"+pulse+"'},{'oxygen':'"+oxygen+"'}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadSPO2Datas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 心电
+	 */
+	@Test
+	public void ecgdata() {
+		String rawData = ReadFileUtil.readStream("/com/cmcc/resource/ecg_data.txt");
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'ECG','dataValue':[{'measureTime':'"+measureTime+"'},{'rawData':'"+rawData+"'}," +
+				"{'hr':'60'},{'waveForm':'波形质量过差'},{'heartRate':'心率正常'},{'isArrhythmia':'心律失常'},{'stIsNormal':'ST段正常'},{'isAF':'房颤'}," +
+				"{'detailedResults':'12608,20728,AF;'},{'simpleResult':'正常窦性心律'}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadEcgDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 心功能运动
+	 */
+	@Test
+	public void heartfunctiondata() {
+		int hfStartHeartRate = MyRandomUtil.getInt(60, 90);
+		int hfEndHeartRate = MyRandomUtil.getInt(80, 120);
+		int hfSteps = MyRandomUtil.getInt(5000, 10000);
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'heartFunction','dataValue':[{'measureTime':'"+measureTime+"'},{'hfStartTime':'09:30'},{'hfStartHeartRate':'"+hfStartHeartRate+"'}," +
+				"{'hfEndTime':'11:00'},{'hfEndHeartRate':'"+hfEndHeartRate+"'},{'hfSteps':'"+hfSteps+"'}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadHeartFunctionDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 日常运动
+	 */
+	@Test
+	public void dailyExerciseData() {
+		StringBuffer steps = new StringBuffer("0");
+		for(int i=1;i<48;i++){
+			steps.append(",").append(MyRandomUtil.getInt(5, 200));
+		}
+		String value = "{'company':'cmcc','password':'MHealthV1','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"
+		+collectDate+"','dataType':'dailyExercise','dataValue':[{'measureTime':'"+measureTime.substring(0,10)+" 00:00:00'},{'getUpTime':'07:30'},{'goBedTime':'21:00'}," +
+				"{'steps':'"+steps+"'}]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadDailyExerciseDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 睡眠
+	 */
+	@Test
+	public void sleepdata() {
+		String value = DataSimulatorUtil.getSleepData(deviceId,measureTime);
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadSleepDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * TCP 协议的运动数据
+	 * junit中无法正确进行多线程测试，方法结束后所有资源全部释放
+	 */
+	@Test
+	public void sports(){
+		Thread tt = new Thread(new StepcountPackageThread(deviceId,measureTime));
+		tt.start();
+		while(tt.isAlive()){
+			try {
+				Thread.sleep(1000);
+				System.out.println("-------------------- sending");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("over!");
+	}
+	/**
+	 * 运动简要包数据
+	 */
+	@Test
+	public void stepCountdata() {
+		String value = "{'data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"+measureTime+"','dataType':'stepCount'," +
+		"'dataValue':[{'stepSum':1267},{'calSum':0},{'distanceSum':0},{'yxbsSum':0},{'weight':60},{'stride':75},{'degreeOne':0},{'degreeTwo':0},{'degreeThree':0},{'degreeFour':0},{'uploadType':1},{'measureTime':'"+measureTime+"'}]},'company':'cmcc','password':'123456'}";
+//		String value = "{'data':{'appType':'cd','deviceId':'DS2013110000001','collectDate':'2014-05-13 15:50:21','dataType':'stepCount','dataValue':[{'stepSum':'264'},{'calSum':'7100'},{'distanceSum':'158'},{'yxbsSum':'0'},{'weight':'60'},{'stride':'60'},{'degreeOne':'1'},{'degreeTwo':'2'},{'degreeThree':'3'},{'degreeFour':'4'},{'uploadType':'1'},{'measureTime':'2014-05-13 15:50:21'}]},'password':'123','company':'mljb'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadSportsDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 运动详细包数据
+	 */
+	@Test
+	public void stepDetaildata() {
+		String value = "{'company':'cmcc','password':'MH','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"+measureTime+"',"
+		+"'dataType':'stepDetail','dataValue':[" +
+				"[{'snp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':9},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+				"[{'snp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'10'},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+				"[{'snp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':11},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+				"[{'snp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'12'},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+				"[{'snp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':13},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+				"[{'snp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'14'},{'measureTime':'"+measureTime.substring(0,10)+"'}]" +
+						"]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadSportsDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	/**
+	 * 运动有效步数包
+	 */
+	@Test
+	public void stepEffectivedata() {
+		String value = "{'company':'cmcc','password':'MH','data':{'appType':'"+appType+"','deviceId':'"+deviceId+"','collectDate':'"+measureTime+"',"
+		+"'dataType':'stepEffective','dataValue':[" +
+		"[{'snyxp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':9},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+		"[{'snyxp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'10'},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+		"[{'snyxp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':11},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+		"[{'snyxp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'12'},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+		"[{'snyxp5':'560,568,299,20,0,0,0,0,0,0,0,0'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':13},{'measureTime':'"+measureTime.substring(0,10)+"'}]," +
+		"[{'snyxp5':'192,0,0,0,0,0,0,0,53,237,417,506'},{'knp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level2p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level3p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'level4p5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'yuanp5':'0,0,0,0,0,0,0,0,0,0,0,0'},{'hour':'14'},{'measureTime':'"+measureTime.substring(0,10)+"'}]" +
+		"]}}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/service/uploadSportsDatas", "datas", value);
+		System.out.println("gwPushResult="+gwPushResult);
+	}
+	@Test
+	public void test(){
+		String userInfo = "{'opeType':'insert','deviceId':'xxx12345','dataType':'bloodPressure','gateway':'223.202.47.134:8889','phone':'15711111475','name':'任华','appType':'WSJK;WSYD','ywid':2}";
+		System.out.println(userInfo );
+		JSONObject jo = JSONObject.fromObject(userInfo);
+		
+		String phone = jo.getString("phone");
+		String name = jo.getString("name");
+		String appType = jo.getString("appType");
+		StringBuffer url = new StringBuffer();
+		url.append(PropertiesReader.getProp("EMR_URL_USER")).append("/service/AddPatientInfo")
+			.append("/").append(phone)
+			.append("/").append(phone+"@139.com")
+			.append("/").append(name)
+			.append("/").append(1)
+			.append("/").append("1970-01-01")
+			.append("/").append("CMRI")
+			.append("/").append(appType);
+		System.out.println(url.toString());
+		
+		try {
+			httpClientPost(URLEncoder.encode("http://10.2.44.105:8080/EMR/findPatientData.json","UTF-8"), "", "");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 发送post请求推送数据，根据响应结果判断发送成功和失败
+	 * 
+	 * @param url
+	 * @param pairKey
+	 * @param jsono
+	 * @return boolean
+	 */
+	public static boolean httpClientPost(String url, String pairKey, String value) {
+		boolean gwPushResult = false;
+		StringBuilder responseString = new StringBuilder();
+		HttpClient client = new HttpClient();
+		//设置连接超时时间
+		client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+		//设置响应超时时间
+		client.getHttpConnectionManager().getParams().setSoTimeout(15000);
+		PostMethod postM = null;
+		try {
+			postM = new PostMethod(url);
+//			postM.addParameter(new NameValuePair(pairKey, value));
+			postM.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET,"utf-8");  
+			postM.setParameter(pairKey, value);
+			int s = client.executeMethod(postM);
+			System.out.println("s="+s);
+			System.out.println(postM.getStatusLine());
+			Reader reader = new InputStreamReader(postM.getResponseBodyAsStream(), "utf8");
+			BufferedReader br = new BufferedReader(reader);
+			String line = "";
+			while (null != (line = br.readLine())) {
+				responseString.append(line);
+			}
+			System.out.println(responseString);
+			JSONObject jo = JSONObject.fromObject(responseString.toString());
+			if ("success".equalsIgnoreCase(jo.getString("status"))) {
+				gwPushResult = true;
+			}
+		} catch (Exception e) {
+			gwPushResult = false;
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			postM.releaseConnection();
+			System.out.println("release..");
+		}
+		return gwPushResult;
+	}
+	public String getDeviceId() {
+		return deviceId;
+	}
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+	public String getCollectDate() {
+		return collectDate;
+	}
+	public void setCollectDate(String collectDate) {
+		this.collectDate = collectDate;
+	}
+	public String getMeasureTime() {
+		return measureTime;
+	}
+	public void setMeasureTime(String measureTime) {
+		this.measureTime = measureTime;
+	}
+}

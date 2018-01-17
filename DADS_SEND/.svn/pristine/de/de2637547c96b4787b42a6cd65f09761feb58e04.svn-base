@@ -1,0 +1,92 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.io.IOException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.model.ThreadMonitorModel;
+import com.cmcc.monitor.Util.LoginUserInfo;
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.rmi.server.IThreadMonitor;
+
+@Controller
+public class ThreadMonitorController extends BaseController{
+	private static Logger log = Logger.getLogger(ThreadMonitorController.class);
+	@RequestMapping(value="/getThreadState.json")
+	public void getThreadState(HttpServletRequest request,HttpServletResponse response) throws NotBoundException, IOException
+	{
+		//线程监控开关
+		if(!"on".equalsIgnoreCase(PropertiesReader.getProp("rmiToggle"))){
+			return;
+		}
+		IThreadMonitor monitor = (IThreadMonitor)Naming.lookup("rmi://localhost:"+PropertiesReader.getProp("rmiPort")+"/"+PropertiesReader.getProp("rmiName"));
+		List<ThreadMonitorModel> list = monitor.getThreadState();
+	
+		response.setContentType("text/html;charset=utf-8");
+		JSONArray result = JSONArray.fromObject(list);
+		this.writeToClient(response, result);
+	}
+	
+	@RequestMapping(value="/changeThreadState.json")
+	public void changeThreadState(HttpServletRequest request,HttpServletResponse response) throws NotBoundException, IOException
+	{
+		JSONObject json = JSONObject.fromObject(request.getParameter("data"));
+		if(json == null) return ;
+		String threadName = json.getString("threadName");
+		boolean ret = false;
+		IThreadMonitor monitor = (IThreadMonitor)Naming.lookup("rmi://localhost:"+PropertiesReader.getProp("rmiPort")+"/"+PropertiesReader.getProp("rmiName"));
+		if(json.getBoolean("isStart")){
+			ret = monitor.startThread(json.getString("threadName"));
+	        log.info(LoginUserInfo.getCurrentUserInfo(request)+"Thread "+threadName + " is starting...");
+		}else{
+			ret = monitor.stopThread(json.getString("threadName"));
+	        log.info(LoginUserInfo.getCurrentUserInfo(request)+"Thread "+threadName + " has stopped...");
+		}
+		response.setContentType("text/html;charset=utf-8");
+		JSONObject result = new JSONObject();
+		result.put("status", ret);
+		this.writeToClient(response, result);
+	}
+	
+	@RequestMapping(value="/changeAllState.json")
+	public void changeAllThreadState(HttpServletRequest request,HttpServletResponse response) throws NotBoundException, IOException
+	{
+		JSONObject json = JSONObject.fromObject(request.getParameter("data"));
+		boolean ret = false;
+		IThreadMonitor monitor = (IThreadMonitor)Naming.lookup("rmi://localhost:"+PropertiesReader.getProp("rmiPort")+"/"+PropertiesReader.getProp("rmiName"));
+		if(json.getBoolean("isStart")){
+			ret = monitor.startAllthreads();
+	        log.info(LoginUserInfo.getCurrentUserInfo(request)+"All Threads is starting...");
+		}else{
+			ret = monitor.stopAllthreads();
+	        log.info(LoginUserInfo.getCurrentUserInfo(request)+"All Threads has stopped...");
+		}
+		response.setContentType("text/html;charset=utf-8");
+		JSONObject result = new JSONObject();
+		result.put("status", ret);
+		this.writeToClient(response, result);
+	}
+//	public  static void main(String[] args) throws MalformedURLException, RemoteException, NotBoundException
+//	{
+//		IThreadMonitor monitor = (IThreadMonitor)Naming.lookup("rmi://localhost:8880/ThreadMonitor");
+//		List<ThreadMonitorModel> list = monitor.getThreadState();
+//		Iterator<ThreadMonitorModel> iterator = list.iterator();
+//		while(iterator.hasNext())
+//		{
+//			ThreadMonitorModel model = iterator.next();
+//			System.out.println("name:"+model.getThreadName());
+//			System.out.println("state:"+model.getThreadState());
+//		}
+//	}
+}

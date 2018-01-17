@@ -1,0 +1,29 @@
+package com.cmcc.monitor.Dao;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.Userstatistics;
+
+/**
+ * A data access object (DAO) providing persistence and search support for
+ * Userstatistics entities. Transaction control of the save(), update() and
+ * delete() operations can directly support Spring container-managed
+ * transactions or they can be augmented to handle user-managed Spring
+ * transactions. Each of these methods provides additional information for how
+ * to configure it for the desired type of transaction control.
+ * 
+ * @see com.cmcc.monitor.base.Domain.Userstatistics
+ * @author MyEclipse Persistence Tools
+ */
+
+public interface UserstatisticsDAO {
+	public void insert(Userstatistics entity);
+
+	public void update(Userstatistics entity);
+
+	public void delete(int id);
+	
+	public Userstatistics findById(int id);
+	
+	public List<Userstatistics> findScrollPage(final int page,final int pagesize,final String condition);
+}

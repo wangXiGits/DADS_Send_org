@@ -1,0 +1,110 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import static javax.persistence.GenerationType.IDENTITY;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+/**
+ * Datatype entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "datatype")
+public class Datatype implements java.io.Serializable {
+
+	// Fields
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1587967520143122199L;
+	private Integer datatypeId;
+	private String dataTypeName;
+	private String dataDesc;
+	private String tableName;
+	private String updateTime;
+	private Set<ProductDatatype> productDatatypes = new HashSet<ProductDatatype>(
+			0);
+
+	// Constructors
+
+	/** default constructor */
+	public Datatype() {
+	}
+
+	/** full constructor */
+	public Datatype(String dataTypeName, String dataDesc,String tableName, String updateTime,
+			Set<ProductDatatype> productDatatypes) {
+		this.dataTypeName = dataTypeName;
+		this.dataDesc = dataDesc;
+		this.tableName = tableName;
+		this.updateTime = updateTime;
+		this.productDatatypes = productDatatypes;
+	}
+
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "datatypeID", unique = true, nullable = false)
+	public Integer getDatatypeId() {
+		return this.datatypeId;
+	}
+
+	public void setDatatypeId(Integer datatypeId) {
+		this.datatypeId = datatypeId;
+	}
+
+	@Column(name = "dataTypeName", length = 50)
+	public String getDataTypeName() {
+		return this.dataTypeName;
+	}
+
+	public void setDataTypeName(String dataTypeName) {
+		this.dataTypeName = dataTypeName;
+	}
+
+	@Column(name = "dataDesc", length = 50)
+	public String getDataDesc() {
+		return this.dataDesc;
+	}
+
+	public void setDataDesc(String dataDesc) {
+		this.dataDesc = dataDesc;
+	}
+	
+	@Column(name = "tableName", length = 50)
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+	
+	@Column(name = "updateTime", length = 20)
+	public String getUpdateTime() {
+		return this.updateTime;
+	}
+
+	public void setUpdateTime(String updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "datatype")
+	public Set<ProductDatatype> getProductDatatypes() {
+		return this.productDatatypes;
+	}
+
+	public void setProductDatatypes(Set<ProductDatatype> productDatatypes) {
+		this.productDatatypes = productDatatypes;
+	}
+
+}

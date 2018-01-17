@@ -1,0 +1,57 @@
+package com.cmcc.monitor.DaoImpl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.stereotype.Component;
+
+import com.cmcc.monitor.Dao.ResetrecordDAO;
+import com.cmcc.monitor.base.Domain.Resetrecord;
+
+@Component
+public class ResetrecordDAOImpl implements ResetrecordDAO {
+
+	@Autowired
+    private HibernateTemplate hibernateTemplate;
+	@Override
+	public void insert(Resetrecord entity) {
+		this.hibernateTemplate.save(entity);
+	}
+
+	@Override
+	public void update(Resetrecord entity) {
+		this.hibernateTemplate.update(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		Resetrecord entity = this.findById(id);
+		this.hibernateTemplate.delete(entity);
+	}
+
+	@Override
+	public Resetrecord findById(int id) {
+		return (Resetrecord)this.hibernateTemplate.get(Resetrecord.class,new Integer(id));
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List<Resetrecord> findScrollPage(final int page,final int pagesize,
+			final String condition) {
+		return (List<Resetrecord>)this.hibernateTemplate.executeFind(new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException,
+					SQLException {
+				Query query=session.createQuery("from Resetrecord o "+condition);
+				query.setFirstResult((page-1)*pagesize);
+				query.setMaxResults(pagesize);
+				return query.list();
+			}
+		});
+	}
+}

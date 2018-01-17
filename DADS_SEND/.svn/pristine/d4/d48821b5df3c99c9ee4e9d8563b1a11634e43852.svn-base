@@ -1,0 +1,115 @@
+package com.cmcc.monitor.Dao;
+
+import java.util.List;
+
+import com.cmcc.monitor.base.Domain.HealthData;
+import com.cmcc.monitor.base.Domain.PatientData;
+
+
+
+public interface MongoDAO {
+	/** 
+	 * 新增 
+	 * <br>------------------------------<br> 
+	 * @param PatientData 
+	 */  
+	void insertPatient(PatientData patientData);  
+	/** 
+     * 新增 
+     * <br>------------------------------<br> 
+     * @param HealthData 
+     */  
+    void insert(HealthData healthData);  
+      
+    /** 
+     * 新增 
+     * <br>------------------------------<br> 
+     * @param HealthDatas 
+     */  
+    void insertAll(List<HealthData> healthDatas);  
+      
+    /** 
+     * 删除,主键id, 如果主键的值为null,删除会失败 
+     * <br>------------------------------<br> 
+     * @param id 
+     */  
+    void deleteById(String id);  
+      
+    /** 
+     * 按条件删除 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     */  
+    void delete(HealthData criteriaHealthData);  
+      
+    /** 
+     * 删除全部 
+     * <br>------------------------------<br> 
+     */  
+    void deleteAll();  
+      
+    /** 
+     * 修改 
+     * <br>------------------------------<br> 
+     * @param HealthData 
+     */  
+    void updateById(HealthData healthData);  
+      
+    /** 
+     * 更新多条 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @param HealthData 
+     */  
+    void update(HealthData criteriaHealthData, HealthData healthData);  
+      
+    /** 
+     * 根据主键查询 
+     * <br>------------------------------<br> 
+     * @param id 
+     * @return 
+     */  
+    HealthData findById(String id);  
+      
+    /** 
+     * 查询全部 
+     * <br>------------------------------<br> 
+     * @return 
+     */  
+    List<HealthData> findAll();  
+      
+    /** 
+     * 按条件查询 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @param skip 
+     * @param limit 
+     * @return 
+     */  
+    List<HealthData> find(HealthData criteriaHealthData, int skip, int limit);  
+      
+    /** 
+     * 根据条件查询出来后 在去修改 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData  查询条件 
+     * @param updateHealthData    修改的值对象 
+     * @return 
+     */  
+    HealthData findAndModify(HealthData criteriaHealthData, HealthData updateHealthData);  
+      
+    /** 
+     * 查询出来后 删除 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @return 
+     */  
+    HealthData findAndRemove(HealthData criteriaHealthData);  
+      
+    /** 
+     * count 
+     * <br>------------------------------<br> 
+     * @param criteriaHealthData 
+     * @return 
+     */  
+    long count(HealthData criteriaHealthData);  
+}

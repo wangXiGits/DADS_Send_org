@@ -1,0 +1,79 @@
+package com.cmcc.mina.packet.jiays;
+
+import com.cmcc.mina.packet.PackageData;
+
+/** 
+ * 项目名称：MinaGateWay   
+ * 类名称：BPNo8DataPackage   
+ * 类描述：暂无 
+ * 创建人：rcm   
+ * 创建时间：2013-11-26 上午10:40:46   
+ * 修改人：rcm   
+ * 修改时间：2013-11-26 上午10:40:46   
+ * 修改备注： 
+ * @version   
+ */
+public class No8BPBSPackage extends PackageData {
+	private String measureTime;		//测量时间
+	private String highpressure;	//高压
+	private String lowpressure;		//低压
+	private String heartrate;		//心率
+	private String meanpressure;	//平均动脉压
+	private String stepdate = ""; //数据真实时间
+	private String bloodsugar ; //血糖
+	private String datatype ; //体征数据类型 ：1 血压；2 餐前血糖；3普通血糖;4 体重；
+	public No8BPBSPackage(){
+		this.name = "jiays";
+		this.type = "BPBS";
+	}
+	public String getBloodsugar() {
+		return bloodsugar;
+	}
+	public void setBloodsugar(String bloodsugar) {
+		this.bloodsugar = bloodsugar;
+	}
+	public String getMeasureTime() {
+		return measureTime;
+	}
+	public void setMeasureTime(String measureTime) {
+		this.measureTime = measureTime;
+	}
+	public String getHighpressure() {
+		return highpressure;
+	}
+	public void setHighpressure(String highpressure) {
+		this.highpressure = highpressure;
+	}
+	public String getLowpressure() {
+		return lowpressure;
+	}
+	public void setLowpressure(String lowpressure) {
+		this.lowpressure = lowpressure;
+	}
+	public String getHeartrate() {
+		return heartrate;
+	}
+	public void setHeartrate(String heartrate) {
+		this.heartrate = heartrate;
+	}
+	public String getMeanpressure() {
+		return meanpressure;
+	}
+	public void setMeanpressure(String meanpressure) {
+		this.meanpressure = meanpressure;
+	}
+	public String getStepdate() {
+		return stepdate;
+	}
+	public void setStepdate(String stepdate) {
+		this.stepdate = stepdate;
+	}
+	public String getDatatype() {
+		return datatype;
+	}
+	public void setDatatype(String datatype) {
+		this.datatype = datatype;
+	}
+	
+}
+

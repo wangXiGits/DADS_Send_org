@@ -1,0 +1,231 @@
+package com.cmcc.monitor.base.Domain;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Exceptiondata entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "exceptiondata")
+public class Exceptiondata implements java.io.Serializable {
+
+	// Fields
+
+	private Integer id;
+	private String patientId;
+	private String company;
+	private String deviceId;
+	private String flag;
+	private String sendFlag;
+	private String spareFlag;
+	private String packageNum;
+	private String totalSteps;
+	private String receiveTime;
+	private String dataNewcontentStepcount2;
+	private String step3newvalue;
+	private String step2newvalue;
+	private String sendTime;
+	private String location;
+	private String realTime;
+	private String firmwareVersion;
+
+	// Constructors
+
+	/** default constructor */
+	public Exceptiondata() {
+	}
+
+	/** minimal constructor */
+	public Exceptiondata(String patientId, String receiveTime) {
+		this.patientId = patientId;
+		this.receiveTime = receiveTime;
+	}
+
+	/** full constructor */
+	public Exceptiondata(String patientId, String company, String deviceId,
+			String flag, String sendFlag, String spareFlag, String packageNum,
+			String totalSteps, String receiveTime,
+			String dataNewcontentStepcount2, String step3newvalue,
+			String step2newvalue, String sendTime, String location,
+			String realTime, String firmwareVersion) {
+		this.patientId = patientId;
+		this.company = company;
+		this.deviceId = deviceId;
+		this.flag = flag;
+		this.sendFlag = sendFlag;
+		this.spareFlag = spareFlag;
+		this.packageNum = packageNum;
+		this.totalSteps = totalSteps;
+		this.receiveTime = receiveTime;
+		this.dataNewcontentStepcount2 = dataNewcontentStepcount2;
+		this.step3newvalue = step3newvalue;
+		this.step2newvalue = step2newvalue;
+		this.sendTime = sendTime;
+		this.location = location;
+		this.realTime = realTime;
+		this.firmwareVersion = firmwareVersion;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@Column(name = "patientID", nullable = false, length = 50)
+	public String getPatientId() {
+		return this.patientId;
+	}
+
+	public void setPatientId(String patientId) {
+		this.patientId = patientId;
+	}
+
+	@Column(name = "company", length = 50)
+	public String getCompany() {
+		return this.company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	@Column(name = "deviceID", length = 50)
+	public String getDeviceId() {
+		return this.deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	@Column(name = "flag", length = 20)
+	public String getFlag() {
+		return this.flag;
+	}
+
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+
+	@Column(name = "sendFlag", length = 20)
+	public String getSendFlag() {
+		return this.sendFlag;
+	}
+
+	public void setSendFlag(String sendFlag) {
+		this.sendFlag = sendFlag;
+	}
+
+	@Column(name = "spareFlag", length = 20)
+	public String getSpareFlag() {
+		return this.spareFlag;
+	}
+
+	public void setSpareFlag(String spareFlag) {
+		this.spareFlag = spareFlag;
+	}
+
+	@Column(name = "packageNum", length = 20)
+	public String getPackageNum() {
+		return this.packageNum;
+	}
+
+	public void setPackageNum(String packageNum) {
+		this.packageNum = packageNum;
+	}
+
+	@Column(name = "totalSteps", length = 20)
+	public String getTotalSteps() {
+		return this.totalSteps;
+	}
+
+	public void setTotalSteps(String totalSteps) {
+		this.totalSteps = totalSteps;
+	}
+
+	@Column(name = "receiveTime", nullable = false, length = 100)
+	public String getReceiveTime() {
+		return this.receiveTime;
+	}
+
+	public void setReceiveTime(String receiveTime) {
+		this.receiveTime = receiveTime;
+	}
+
+	@Column(name = "data_newcontent_stepcount2", length = 1500)
+	public String getDataNewcontentStepcount2() {
+		return this.dataNewcontentStepcount2;
+	}
+
+	public void setDataNewcontentStepcount2(String dataNewcontentStepcount2) {
+		this.dataNewcontentStepcount2 = dataNewcontentStepcount2;
+	}
+
+	@Column(name = "STEP3NEWVALUE", length = 1500)
+	public String getStep3newvalue() {
+		return this.step3newvalue;
+	}
+
+	public void setStep3newvalue(String step3newvalue) {
+		this.step3newvalue = step3newvalue;
+	}
+
+	@Column(name = "STEP2NEWVALUE", length = 1500)
+	public String getStep2newvalue() {
+		return this.step2newvalue;
+	}
+
+	public void setStep2newvalue(String step2newvalue) {
+		this.step2newvalue = step2newvalue;
+	}
+
+	@Column(name = "sendTime", length = 100)
+	public String getSendTime() {
+		return this.sendTime;
+	}
+
+	public void setSendTime(String sendTime) {
+		this.sendTime = sendTime;
+	}
+
+	@Column(name = "location", length = 50)
+	public String getLocation() {
+		return this.location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	@Column(name = "realTime", length = 50)
+	public String getRealTime() {
+		return this.realTime;
+	}
+
+	public void setRealTime(String realTime) {
+		this.realTime = realTime;
+	}
+
+	@Column(name = "firmware_version", length = 50)
+	public String getFirmwareVersion() {
+		return this.firmwareVersion;
+	}
+
+	public void setFirmwareVersion(String firmwareVersion) {
+		this.firmwareVersion = firmwareVersion;
+	}
+
+}

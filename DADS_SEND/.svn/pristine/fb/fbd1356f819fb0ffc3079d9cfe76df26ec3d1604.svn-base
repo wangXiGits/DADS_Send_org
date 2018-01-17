@@ -1,0 +1,12 @@
+package com.cmcc.mina.state.milink;
+
+import org.apache.log4j.Logger;
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.PackageData;
+
+public interface SportsPacketHandleState {
+	public static Logger log = Logger.getLogger(SportsPacketHandleState.class);
+	public boolean handlePacket(IoSession session,Object message);
+	
+}

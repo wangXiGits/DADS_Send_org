@@ -1,0 +1,60 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+/**
+ * 
+ * 项目名称：DADS   
+ * 类名称：PatientData   
+ * 类描述：暂无 
+ * 创建人：lw   
+ * 创建时间：2014-5-9 上午11:51:17   
+ * 修改人：lw   
+ * 修改时间：2014-5-9 上午11:51:17   
+ * 修改备注： 
+ * @version
+ */
+@Document
+public class PatientData implements Serializable{
+	private static final long serialVersionUID = -976116140897738440L;
+	@Id
+	private String id;
+	private String name;
+	public PatientData(){}
+	@Override
+	public String toString() {
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("id", id);
+		map.put("name", name);
+		return map.toString();
+	}
+	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	};
+	
+}

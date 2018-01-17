@@ -1,0 +1,258 @@
+package com.cmcc.gateway.restful.Contorller;
+
+import java.beans.IntrospectionException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.cmcc.monitor.Service.MongoService;
+import com.cmcc.monitor.Util.BeanToMapUtil;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.MongoDBHelper;
+import com.cmcc.monitor.Util.NetworkUtil;
+import com.cmcc.monitor.base.Domain.DeviceInfo;
+import com.cmcc.monitor.base.Domain.HealthData;
+import com.cmcc.monitor.base.Domain.PatientData;
+import com.cmcc.monitor.base.Domain.PatientInfo;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+@Controller
+public class MongodbController {
+	private static Logger log = Logger.getLogger(MongodbController.class);
+	private static ApplicationContext app;  
+    private static MongoService mongoService;  
+    public void query(){
+    	long start = System.currentTimeMillis();
+    	List<HealthData> list = mongoService.findAll();
+    	JSONArray js = JSONArray.fromObject(list);
+    	System.out.println(js);
+    	System.out.println("query cost :"+(System.currentTimeMillis()-start)+"ms");
+    }
+    @Test 
+    public void saveBatch(){
+    	String data = loadData();
+    	System.out.println("begin ...");
+    	long start = System.currentTimeMillis();
+    	int num = 10000000;
+    	long temp = System.currentTimeMillis();
+    	for (int i = 1; i <= num; i++) {
+    		if(i%100==0&&i!=0){
+    			System.out.println("第"+(i-100)+"-"+i+"次插入,耗时："+(System.currentTimeMillis()-temp)+"ms");
+    			temp = System.currentTimeMillis(); 
+    		}
+    		saveHealthDataFile(data);
+		}
+    	System.out.println("save cost :"+(System.currentTimeMillis()-start)+"ms");
+    }
+    public void savePatientData(){
+    	PatientData pd = new PatientData();
+    	pd.setName("yx");
+    	mongoService.savePatientData(pd);
+    }
+    public String loadData(){
+    	File file = new File("C:\\Users\\yourname\\Desktop\\monishuju.txt");
+    	String data_str = "";
+    	try {
+    		data_str = FileUtils.readFileToString(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return data_str;
+    }
+    public void saveHealthDataFile(String data){
+    	BasicDBObject obj = new BasicDBObject();
+		JSONObject jo = JSONObject.fromObject(data);
+		Iterator<String> joKeys = jo.keys();  
+        while(joKeys.hasNext()){  
+            String key = joKeys.next();  
+            obj.put(key, jo.get(key));  
+        }  
+    	MongoDBHelper.getInstance().insertHealthData(obj);
+    }
+    public void saveHealthData(){
+    	BasicDBObject obj = new BasicDBObject();
+    	obj.put("deviceId", "123456789CMCC");
+    	obj.put("phone","15910858511" );
+    	obj.put("appType", "WSYD");
+    	obj.put("dataType", "stepCount");
+    	obj.put("measureTime", "2014-05-09 18:33:00");
+    	obj.put("collectDate", "2014-05-09 18:34:00");
+    	obj.put("locationUrl", "http://www.baidu.com");
+    	obj.put("locationName", "单位");
+    	obj.put("locationCode", "CMCC");
+    	PatientInfo patientInfo = new PatientInfo();
+	    	patientInfo.setBirth("2000-01-01");
+	    	patientInfo.setEmail("15910858511@139.com");
+	    	patientInfo.setIdcard("152801198708223332");
+	    	patientInfo.setName("李伟");
+	    	patientInfo.setPassword("123456");
+	    	patientInfo.setPhone("15910858511");
+	    	patientInfo.setSex("男");
+	    	try {
+				Map map = BeanToMapUtil.convertBean(patientInfo);
+				obj.put("patientInfo", map);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (IntrospectionException e) {
+				e.printStackTrace();
+			}
+    	DeviceInfo deviceInfo = new DeviceInfo();
+	    	deviceInfo.setDeviceId("123456789CMCC");
+	    	deviceInfo.setDeviceName("健康设备");
+	    	try {
+				Map map = BeanToMapUtil.convertBean(deviceInfo);
+				obj.put("deviceInfo", map);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (IntrospectionException e) {
+				e.printStackTrace();
+			}
+    	List<Map<String, String>> dataValue = new ArrayList<Map<String, String>>();
+	    	Map<String, String> map = new HashMap<String, String>();
+	    	map.put("heartrate", "79");
+	    	dataValue.add(map);
+	    	map = new HashMap<String, String>();
+	    	map.put("systolic", "120");
+	    	dataValue.add(map);
+	    	map = new HashMap<String, String>();
+	    	map.put("diastolic", "80");
+	    	dataValue.add(map);
+    	obj.put("dataValue", dataValue);
+    	MongoDBHelper.getInstance().insertHealthData(obj);
+    }
+    public void save() {  
+    	HealthData h = new HealthData();  
+    	h.setPhone("15910858511");
+    	PatientInfo patientInfo = new PatientInfo();
+    	patientInfo.setName("李伟");
+    	patientInfo.setBirth("1987-12-12");
+    	patientInfo.setEmail("yanxilou@eyou.com");
+    	patientInfo.setIdcard("152801198708223332");
+    	patientInfo.setPassword("123456");
+    	patientInfo.setSex("男");
+    	h.setPatientInfo(patientInfo);
+    	DeviceInfo deviceInfo = new DeviceInfo();
+    	deviceInfo.setDeviceName("益体康设备");
+    	deviceInfo.setDeviceId("111222444555");
+    	h.setDeviceInfo(deviceInfo);
+    	List<Map<String, String>> dataValue = new ArrayList<Map<String, String>>();
+    	Map<String, String> map = new HashMap<String, String>();
+    	map.put("measureTime", "2013-01-01 08:00:00");
+    	dataValue.add(map);
+    	map = new HashMap<String, String>();
+    	map.put("afterMeal", "9.5");
+    	dataValue.add(map);
+    	map = new HashMap<String, String>();
+    	map.put("beforeMeal", "6.2");
+    	dataValue.add(map);
+    	h.setDataValue(dataValue);
+    	h.setAppType("WSXHH");
+    	h.setCollectDate("2013-01-01 08:00:00");
+    	h.setLocationCode("CMCC");
+    	h.setLocationUrl("http://localhost:8080/EMR");
+    	h.setMeasureTime("2013-01-01 08:01:00");
+    	h.setDeviceId("111222444555");
+        mongoService.save(h);  
+    }  
+  
+  
+    @BeforeClass  
+    public static void initSpring() {  
+        app = new FileSystemXmlApplicationContext(new String[] { "WebContent/WEB-INF/applicationContext.xml"  
+                });  
+        mongoService = (MongoService) app.getBean("mongoService");  
+    }  
+    
+    //insert business data
+    @RequestMapping(method=RequestMethod.POST, value="/uploadBusinessDatas",params={"datas"})
+	public void uploadBusinessDatas(HttpServletRequest request,HttpServletResponse response){
+		log.info("the begin of uploadBusinessDatas...");
+		long beginTime = System.currentTimeMillis();
+		log.debug("请求开始时间："+beginTime);
+		//调用通用处理方法
+		JSONObject jo = JSONObject.fromObject(request.getParameter("datas"));
+		String deviceId = jo.getString("deviceId");
+		DBObject dt= MongoDBHelper.getInstance().queryPatientPhoneAndApptypeByDeviceId(deviceId);
+		jo.put("phone", dt.get("phone"));
+		jo.put("appType", dt.get("appType"));
+		jo.put("sendFlag", "0");
+		jo.put("receiveTime", DateUtil.getCurrentTime());
+		int result = MongoDBHelper.getInstance().insertHealthData(jo);
+        log.info("the end of uploadBusinessDatas.");
+        log.debug("请求结束，共耗时："+(System.currentTimeMillis()-beginTime)+" ms");
+	}
+    
+    //insert patient info
+    @RequestMapping(method=RequestMethod.POST, value="/uploadPatientInfo",params={"datas"})
+    public void uploadPatientInfo(HttpServletRequest request,HttpServletResponse response){
+    	log.info("the begin of PatientInfo...");
+    	long beginTime = System.currentTimeMillis();
+    	log.debug("请求开始时间："+beginTime);
+    	//调用通用处理方法
+    	JSONObject jo = JSONObject.fromObject(request.getParameter("datas"));
+    	MongoDBHelper.getInstance().insertPatientData(jo);
+    	log.info("the end of PatientInfo.");
+    	log.debug("请求结束，共耗时："+(System.currentTimeMillis()-beginTime)+" ms");
+    }
+    //send healData by id and modify 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(method=RequestMethod.POST, value="/sendHealthData")
+    public void sendHealthData(HttpServletRequest request,HttpServletResponse response){
+    	log.info("the begin of sendHealthData...");
+    	long beginTime = System.currentTimeMillis();
+    	log.debug("请求开始时间："+beginTime);
+    	String sendURL = "http://10.2.44.105:8080/EMR/service/businessDataReceive";
+    	List<DBObject> list = MongoDBHelper.getInstance().queryHealthDataByApptypeAndSendFlag("WSXHH", "0");
+    	for (DBObject dbObject : list) {
+    		System.out.println(dbObject);
+    		Map map = new HashMap();
+    		String id = dbObject.get("_id").toString();
+    		dbObject.removeField("_id");
+    		dbObject.put("collectDate", DateUtil.getCurrentTime());
+    		map.put("data", dbObject);
+			int result = NetworkUtil.postDataCode(sendURL, map);
+			if(result==200){
+				System.out.println("-------------------------------------------------");
+				MongoDBHelper.getInstance().updateHealthDataSendFlagByObjectId(id, "1");
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+    	try {
+			response.getWriter().write("send "+list.size()+" data end");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	//调用通用处理方法
+    	log.info("the end of sendHealthData.");
+    	log.debug("请求结束，共耗时："+(System.currentTimeMillis()-beginTime)+" ms");
+    }
+}

@@ -1,0 +1,168 @@
+package com.cmcc.monitor.base.Domain;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Ecgdata entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name = "ecgdata")
+public class Ecgdata implements java.io.Serializable {
+
+	// Fields
+
+	private Integer id;
+	private String phone;
+	private String deviceId;
+	private String dataType;
+	private String appType;
+	private String deviceUseFlag;
+	private String pname;
+	private String sendFlag;
+	private String receiveTime;
+	private String realTime;
+	private String sendTime;
+	private String dataValue;
+
+	// Constructors
+
+	/** default constructor */
+	public Ecgdata() {
+	}
+
+	/** full constructor */
+	public Ecgdata(String phone, String deviceId, String dataType,
+			String appType, String deviceUseFlag, String pname,
+			String sendFlag, String receiveTime, String realTime,
+			String sendTime, String dataValue) {
+		this.phone = phone;
+		this.deviceId = deviceId;
+		this.dataType = dataType;
+		this.appType = appType;
+		this.deviceUseFlag = deviceUseFlag;
+		this.pname = pname;
+		this.sendFlag = sendFlag;
+		this.receiveTime = receiveTime;
+		this.realTime = realTime;
+		this.sendTime = sendTime;
+		this.dataValue = dataValue;
+	}
+
+	// Property accessors
+	@Id
+	@GeneratedValue(strategy = IDENTITY)
+	@Column(name = "id", unique = true, nullable = false)
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	@Column(name = "phone", length = 20)
+	public String getPhone() {
+		return this.phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	@Column(name = "deviceID", length = 50)
+	public String getDeviceId() {
+		return this.deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	@Column(name = "dataType", length = 50)
+	public String getDataType() {
+		return this.dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	@Column(name = "appType", length = 20)
+	public String getAppType() {
+		return this.appType;
+	}
+
+	public void setAppType(String appType) {
+		this.appType = appType;
+	}
+
+	@Column(name = "deviceUseFlag", length = 1)
+	public String getDeviceUseFlag() {
+		return this.deviceUseFlag;
+	}
+
+	public void setDeviceUseFlag(String deviceUseFlag) {
+		this.deviceUseFlag = deviceUseFlag;
+	}
+
+	@Column(name = "pname", length = 50)
+	public String getPname() {
+		return this.pname;
+	}
+
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+
+	@Column(name = "sendFlag", length = 1)
+	public String getSendFlag() {
+		return this.sendFlag;
+	}
+
+	public void setSendFlag(String sendFlag) {
+		this.sendFlag = sendFlag;
+	}
+
+	@Column(name = "receiveTime", length = 20)
+	public String getReceiveTime() {
+		return this.receiveTime;
+	}
+
+	public void setReceiveTime(String receiveTime) {
+		this.receiveTime = receiveTime;
+	}
+
+	@Column(name = "realTime", length = 20)
+	public String getRealTime() {
+		return this.realTime;
+	}
+
+	public void setRealTime(String realTime) {
+		this.realTime = realTime;
+	}
+
+	@Column(name = "sendTime", length = 20)
+	public String getSendTime() {
+		return this.sendTime;
+	}
+
+	public void setSendTime(String sendTime) {
+		this.sendTime = sendTime;
+	}
+
+	@Column(name = "dataValue", length = 16777215)
+	public String getDataValue() {
+		return this.dataValue;
+	}
+
+	public void setDataValue(String dataValue) {
+		this.dataValue = dataValue;
+	}
+
+}

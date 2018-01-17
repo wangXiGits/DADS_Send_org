@@ -1,0 +1,288 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import com.cmcc.monitor.Service.PeopleInfoService;
+import com.cmcc.monitor.Service.UsertblService;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.Constants;
+import com.cmcc.monitor.Util.HttpClientExecute;
+import com.cmcc.monitor.Util.LoginUserInfo;
+import com.cmcc.monitor.Util.ValidateUtil;
+import com.cmcc.monitor.base.Domain.Usertbl;
+
+@Controller
+public class PatientInfoController extends BaseController {
+
+	private static Logger log = Logger.getLogger(PatientInfoController.class);	
+	@Autowired
+	private PeopleInfoService peopleInfoService;
+	@Autowired
+	private UsertblService usertblService;
+	@RequestMapping(value="/getPeople.json",params={"data"})
+	public void getPeople(HttpServletRequest request,HttpServletResponse response){
+		
+		String param = request.getParameter("data").toString();
+		JSONObject map = JSONObject.fromObject(param);
+		List<Usertbl> list = peopleInfoService.getAllPeopleInfo(map);
+		JSONArray result = JSONArray.fromObject(list);
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"查询用户信息");
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/exportPeopleInfo.json")
+	public void exportPeopleInfo(HttpServletRequest request,HttpServletResponse response)
+	{
+		List<Usertbl> list = this.peopleInfoService.getAllPeopleInfo(new JSONObject());
+		HSSFWorkbook excel = this.peopleInfoService.getPeopleInfoSheet(list);
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"导出用户信息到EXCEL");
+		try {
+			writeExcelToClient(response,excel,"peopleList");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	@RequestMapping(value="/importPeopleInfo.json")
+	public void importPeopleInfo(HttpServletRequest request,HttpServletResponse response)
+	{
+		JSONObject result = new JSONObject();
+		result.put("status", false);
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		MultipartFile file = multipartRequest.getFile("fileData");
+	    String fileName = file.getOriginalFilename();
+	    if(fileName.endsWith(".xls")||fileName.endsWith(".XLS")){
+	    	result.put("status", this.peopleInfoService.importPeopleInfo(file));
+	    }
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"导入用户信息");
+	    this.writeToClient(response,result);
+	}
+	@RequestMapping(value="/deletePeopleInfo.json",params={"data"})
+	public void deletePeopleInfo(HttpServletRequest request,HttpServletResponse response)
+	{
+		String param = request.getParameter("data").toString();
+		JSONArray ids = JSONArray.fromObject(param);
+		JSONObject result = new JSONObject();
+		result.put("status", this.peopleInfoService.offDevice(ids));
+        log.info(LoginUserInfo.getCurrentUserInfo(request)+"停用设备,编号: "+ids);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/updateOrSavePeopleInfo.json",params={"data"})
+	public void updateOrSavePeopleInfo(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		String param = request.getParameter("data").toString();
+		param=new String(param.getBytes("ISO-8859-1"), "utf-8");
+		JSONObject map = JSONObject.fromObject(param);
+		JSONObject result = new JSONObject();
+		if(map.containsKey("id")){
+			result.put("status", this.peopleInfoService.updatePeople(map));
+			log.info(LoginUserInfo.getCurrentUserInfo(request)+"更新用户 ,编号:"+map.get("id"));
+		}else{
+			result.put("status", this.peopleInfoService.savePeople(map));
+			log.info(LoginUserInfo.getCurrentUserInfo(request)+"新建用户 "+map.toString());
+		}
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 从运维系统同步用户信息
+	 * 		必须参数：phone，deviceId，companyCode，deviceType，deviceUseFlag
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 * void
+	 */
+	@RequestMapping(value="/autoSynoPatientInfo.json",params={"data"})
+	public void autoSynoPatientInfo(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		String param = URLDecoder.decode(request.getParameter("data"),"UTF-8");
+		JSONObject map = JSONObject.fromObject(param);
+		JSONObject result = new JSONObject();
+		String phone = map.containsKey("phone")?map.getString("phone"):"";
+		String deviceId = map.containsKey("deviceId")?map.getString("deviceId"):"";
+		String company = map.containsKey("companyCode")?map.getString("companyCode"):"";
+		String deviceType = map.containsKey("deviceType")?map.getString("deviceType"):"";
+		String deviceUseFlag = map.containsKey("deviceUseFlag")?map.getString("deviceUseFlag"):"";
+		String email = map.containsKey("email")?map.getString("email"):"";
+		String pname = map.containsKey("pname")?map.getString("pname"):"";
+		String companyName = map.containsKey("companyName")?map.getString("companyName"):"";
+		log.info("收到数据:"+map.toString());
+		List<Usertbl> list = null;
+		if(ValidateUtil.paramCheck(phone,deviceId,company,deviceType,deviceUseFlag)){
+			list = usertblService.findScrollPage(0, 1, " where o.patientId='"+phone+"' and o.deviceType='"+deviceType+"'");
+			if(list!=null && list.size()>0){
+				Usertbl u = list.get(0);
+				log.info(u.getId()+"号用户原数据: "+u.toString());
+				u.setCompany(company);
+				u.setCompanyName(companyName);
+				u.setDeviceId(deviceId);
+				u.setDeviceType(deviceType);
+				u.setDeviceUseFlag(deviceUseFlag);
+				u.setEmail(email);
+				u.setPname(pname);
+				usertblService.update(u);
+				result.put("status", "SUCCESS");
+				log.info(u.getId()+"号更新成功 ,编号:"+u.getId()+" 手机号："+phone);
+				log.info(u.getId()+"号更新后数据: "+u.toString());
+			}else{
+				Usertbl u = new Usertbl();
+				u.setPatientId(phone);
+				u.setCompany(company);
+				u.setCompanyName(companyName);
+				u.setDeviceId(deviceId);
+				u.setDeviceType(deviceType);
+				u.setDeviceUseFlag(deviceUseFlag);
+				u.setEmail(email);
+				u.setPname(pname);
+				u.setIsActivate("0");
+				usertblService.insert(u);
+				result.put("status", "SUCCESS");
+				log.info("新建用户成功 ,编号:"+u.getId()+" 手机号："+phone);
+				log.info(u.toString());
+			}
+		}else{
+			result.put("status", "FAIL");
+			result.put("info", "参数不全");
+		}
+		
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 从运维系统同步单位信息
+	 * 		必须参数：companyCode，companyName，companyOldCode，companyOldName
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 * void
+	 */
+	@RequestMapping(value="/autoSynoCompanyInfo.json",params={"data"})
+	public void autoSynoCompanyInfo(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		String param = URLDecoder.decode(request.getParameter("data"),"UTF-8");
+		JSONObject map = JSONObject.fromObject(param);
+		JSONObject result = new JSONObject();
+		String companyCode = map.containsKey("companyCode")?map.getString("companyCode"):"";
+		String companyName = map.containsKey("companyName")?map.getString("companyName"):"";
+		String companyOldCode = map.containsKey("companyOldCode")?map.getString("companyOldCode"):"";
+		String companyOldName = map.containsKey("companyOldName")?map.getString("companyOldName"):"";
+		log.info("收到数据:"+map.toString());
+		if(ValidateUtil.paramCheck(companyCode,companyName,companyOldCode,companyOldName)){
+			String sql = "update usertbl set company=?,companyName=? where company=? and companyName=?";
+			boolean ret = C3P0Util.insertOrUpdateData(sql, companyCode,companyName,companyOldCode,companyOldName);
+			if(ret){
+				log.info("修改单位信息成功：companyCode: "+companyCode+" companyName: "+companyName+" companyOldCode："+companyOldCode+" companyOldName："+companyOldName);
+				result.put("status", "SUCCESS");
+			}else{
+				log.info("修改单位信息失败：companyCode: "+companyCode+" companyName: "+companyName+" companyOldCode："+companyOldCode+" companyOldName："+companyOldName);
+				result.put("status", "FAIL");
+			}
+		}else{
+			result.put("status", "FAIL");
+			result.put("info", "参数不全");
+		}
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 从运维系统修改用户手机号
+	 * @param data : {'old_phone':'','phone':'','email':'','name':''}
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 * void
+	 */
+	@RequestMapping(value="/updatePatient.json",params={"data"})
+	public void updatePatient(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		String param = URLDecoder.decode(request.getParameter("data"),"UTF-8");
+		JSONObject map = JSONObject.fromObject(param);
+		JSONObject result = new JSONObject();
+		String oldPhone = map.containsKey("old_phone")?map.getString("old_phone"):"";
+		String phone = map.containsKey("phone")?map.getString("phone"):"";
+		String email = map.containsKey("email")?map.getString("email"):"";
+		String name = map.containsKey("name")?map.getString("name"):"";
+		log.info("收到数据:"+map.toString());
+		if(ValidateUtil.paramCheck(oldPhone,phone)){
+			String sql = "update usertbl set patientID=?,email=?,pname=? where patientID=?";
+			boolean ret = C3P0Util.insertOrUpdateData(sql, phone,email,name,oldPhone);
+			if(ret){
+				log.info("用户手机号修改成功");
+				result.put("status", "SUCCESS");
+			}else{
+				log.info("用户手机号修改失败");
+				result.put("status", "FAIL");
+			}
+		}else{
+			result.put("status", "FAIL");
+			result.put("info", "参数不全");
+		}
+		this.writeToClient(response, result);
+	}
+	/**
+	 * 业务系统比对用户信息
+	 * <br>返回Json数组：[{"device_code":"CMRI00000000000","user_phone":"13900000000","appType":"WSJK"},
+	 * 						{"device_code":"18310991111","user_phone":"18310991111","appType":"WSJK"}]
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/checkPatientInfo.json")
+	public void checkPatientInfo(HttpServletRequest request,HttpServletResponse response)throws Exception{
+		log.info("begin call checkPatientInfo...");
+		String sql = "select deviceID as device_code,patientID as user_phone,appType from usertbl where deviceUseFlag='1'";
+		List<HashMap<String, String>> list = C3P0Util.getData(sql);
+		JSONArray jsonArray = JSONArray.fromObject(list);
+		log.info("patient num = " + list.size());
+		log.info("end call checkPatientInfo. ");
+		this.writeToClient(response, jsonArray.toString());
+	}
+	/**
+	 * DADS 获取所有未推送到EMR的用户信息
+	 * <br>返回Json数组：[{"id":"1","emr_flag":"0","phone":"13701115948","deviceUseFlag":"1","name":"郭义华","deviceID":"02000001e9a2a0c","appType":"WSJK"},
+	 * 					{"id":"2","emr_flag":"0","phone":"13810279507","deviceUseFlag":"1","name":"周贤波","deviceID":"028C8ABC1B00000","appType":"WSJK"}]
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/findUnpushPatient.json")
+	public void findUnpushPatient(HttpServletRequest request,HttpServletResponse response)throws Exception{
+		log.info("begin call findUnpushPatient...");
+		String sql = "select id,deviceID ,patientID as phone ,appType,pname as name,deviceUseFlag,emr_flag from usertbl where deviceUseFlag='1' and emr_flag='0'";
+		List<HashMap<String, String>> list = C3P0Util.getData(sql);
+		JSONArray jsonArray = JSONArray.fromObject(list);
+		log.info("patient num = " + list.size());
+		log.info("end call findUnpushPatient. ");
+		this.writeToClient(response, jsonArray.toString());
+	}
+	/**
+	 * DADS 获取所有未推送到EMR的用户信息
+	 * <br>接收参数：data=[{"id":"1","emr_flag":"0","phone":"13701115948","deviceUseFlag":"1","name":"郭义华","deviceID":"02000001e9a2a0c","appType":"WSJK"},
+	 * 					{"id":"2","emr_flag":"0","phone":"13810279507","deviceUseFlag":"1","name":"周贤波","deviceID":"028C8ABC1B00000","appType":"WSJK"}]
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/pushUserToEMR.json",params={"data"})
+	public void pushUserToEMR(HttpServletRequest request,HttpServletResponse response)throws Exception{
+		log.info("begin call pushUserToEMR...");
+		String data = new String(request.getParameter("data").getBytes("ISO-8859-1"), "utf-8");
+		log.info(data);
+		String result = peopleInfoService.pushUserToEMR(data);
+		log.info("end call pushUserToEMR. ");
+		this.writeToClient(response, result);
+	}
+}

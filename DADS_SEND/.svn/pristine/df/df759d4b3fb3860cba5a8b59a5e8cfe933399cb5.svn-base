@@ -1,0 +1,12 @@
+package com.cmcc.monitor.Service;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import com.cmcc.monitor.base.Domain.Datastatistics;
+
+public interface PackStatisticService {
+
+	public List<Datastatistics> getAllStatisticData(JSONObject dateIntaval);
+}

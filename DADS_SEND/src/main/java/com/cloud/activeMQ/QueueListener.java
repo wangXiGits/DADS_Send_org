@@ -1,0 +1,29 @@
+package com.cloud.activeMQ;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.TextMessage;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class QueueListener implements MessageListener {
+
+	@Override
+	public void onMessage(Message message) {
+        if ( message instanceof TextMessage )
+        {
+            final TextMessage textMessage = (TextMessage) message;
+            try
+            {
+                System.out.println("activeMQ QueueListener:"+ textMessage.getText() );
+            }
+            catch (final JMSException e)
+            {
+                e.printStackTrace();
+            }
+        }
+	}
+
+}

@@ -1,0 +1,154 @@
+package com.cmcc.monitor.base.Domain;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+/**
+ * Userstatistics entity. @author MyEclipse Persistence Tools
+ */
+@Entity
+@Table(name="userstatistics")
+public class Userstatistics  implements java.io.Serializable {
+
+
+    // Fields    
+
+     /**
+	 * add by rencm on 2013-11-29下午02:46:40
+	 */
+	private static final long serialVersionUID = 3703505928632829435L;
+	private Integer id;
+     private String deviceId;
+     private String company;
+     private String patientId;
+     private String pname;
+     private String lastTime;
+     private String statisticsTime;
+     private Integer nodataDays;
+     private String companyName;
+     private String teamName;
+
+
+    // Constructors
+
+    /** default constructor */
+    public Userstatistics() {
+    }
+
+	/** minimal constructor */
+    public Userstatistics(String deviceId) {
+        this.deviceId = deviceId;
+    }
+    
+    /** full constructor */
+    public Userstatistics(String deviceId, String company, String patientId, String pname, String lastTime, String statisticsTime, Integer nodataDays, String companyName, String teamName) {
+        this.deviceId = deviceId;
+        this.company = company;
+        this.patientId = patientId;
+        this.pname = pname;
+        this.lastTime = lastTime;
+        this.statisticsTime = statisticsTime;
+        this.nodataDays = nodataDays;
+        this.companyName = companyName;
+        this.teamName = teamName;
+    }
+
+   
+    // Property accessors
+    @Id @GeneratedValue(strategy=IDENTITY)
+    @Column(name="id", unique=true, nullable=false)
+    public Integer getId() {
+        return this.id;
+    }
+    
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    
+    @Column(name="deviceID", nullable=false, length=50)
+    public String getDeviceId() {
+        return this.deviceId;
+    }
+    
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+    
+    @Column(name="company", length=50)
+    public String getCompany() {
+        return this.company;
+    }
+    
+    public void setCompany(String company) {
+        this.company = company;
+    }
+    
+    @Column(name="patientID", length=50)
+    public String getPatientId() {
+        return this.patientId;
+    }
+    
+    public void setPatientId(String patientId) {
+        this.patientId = patientId;
+    }
+    
+    @Column(name="pname", length=50)
+    public String getPname() {
+        return this.pname;
+    }
+    
+    public void setPname(String pname) {
+        this.pname = pname;
+    }
+    
+    @Column(name="lastTime", length=50)
+    public String getLastTime() {
+        return this.lastTime;
+    }
+    
+    public void setLastTime(String lastTime) {
+        this.lastTime = lastTime;
+    }
+    
+    @Column(name="statisticsTime", length=50)
+    public String getStatisticsTime() {
+        return this.statisticsTime;
+    }
+    
+    public void setStatisticsTime(String statisticsTime) {
+        this.statisticsTime = statisticsTime;
+    }
+    
+    @Column(name="nodataDays")
+    public Integer getNodataDays() {
+        return this.nodataDays;
+    }
+    
+    public void setNodataDays(Integer nodataDays) {
+        this.nodataDays = nodataDays;
+    }
+    
+    @Column(name="companyName", length=100)
+    public String getCompanyName() {
+        return this.companyName;
+    }
+    
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+    @Column(name="teamName",length=100)
+	public String getTeamName() {
+		return teamName;
+	}
+
+	public void setTeamName(String teamName) {
+		this.teamName = teamName;
+	}
+
+}

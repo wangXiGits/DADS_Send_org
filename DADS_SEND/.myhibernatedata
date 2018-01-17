@@ -1,0 +1,24 @@
+#MyEclipse Hibernate Properties
+#Thu Jul 31 09:50:39 CST 2014
+sessionFactoryName=com.cmcc.emr.view.Domain.HibernateSessionFactory
+genBasicCompId=true
+profile=
+daoSFId=
+version=3.3
+jndiPath=
+detectM2M=false
+reStrategyClass=
+detectO2O=false
+springDaoFile=
+useJavaTypes=true
+keyGenerator=
+libInstallFolder=<no jars/zips in selected libraries>
+addLibs2Project=true
+genVersionTag=false
+sessionFactoryId=
+basePersistenceClass=
+genAnnotations=true
+reSettingsFile=
+configFile=/CmccPhrManage/src/main/java/hibernate.cfg.xml
+createConfigFile=true
+addLibs2Classpath=true

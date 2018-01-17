@@ -1,0 +1,95 @@
+package com.cmcc.monitor.base.Domain;
+
+public class ActivateStatistics {
+	private String companyName;
+	private String teamName;
+	private String pname;
+	private String patientId;
+	private String deviceId;
+	private String isActivate;
+	private String isUpload;
+	private String lastTime;
+	private String statisticsTime;
+	public ActivateStatistics() {
+	}
+
+	public ActivateStatistics(String companyName,String teamName, String pname,
+			String patientId, String deviceId, String isActivate,
+			String isUpload,String statisticsTime) {
+		super();
+		this.companyName = companyName;
+		this.teamName = teamName;
+		this.pname = pname;
+		this.patientId = patientId;
+		this.deviceId = deviceId;
+		this.isActivate = isActivate;
+		this.isUpload = isUpload;
+		this.statisticsTime = statisticsTime;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	public String getPname() {
+		return pname;
+	}
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+	public String getPatientId() {
+		return patientId;
+	}
+	public void setPatientId(String patientId) {
+		this.patientId = patientId;
+	}
+	public String getDeviceId() {
+		return deviceId;
+	}
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	public String getIsActivate() {
+		return isActivate;
+	}
+
+	public void setIsActivate(String isActivate) {
+		this.isActivate = isActivate;
+	}
+
+	public String getIsUpload() {
+		return isUpload;
+	}
+
+	public void setIsUpload(String isUpload) {
+		this.isUpload = isUpload;
+	}
+
+	public String getStatisticsTime() {
+		return statisticsTime;
+	}
+
+	public void setStatisticsTime(String statisticsTime) {
+		this.statisticsTime = statisticsTime;
+	}
+
+	public String getLastTime() {
+		return lastTime;
+	}
+
+	public void setLastTime(String lastTime) {
+		this.lastTime = lastTime;
+	}
+
+	public String getTeamName() {
+		return teamName;
+	}
+
+	public void setTeamName(String teamName) {
+		this.teamName = teamName;
+	}
+	
+}

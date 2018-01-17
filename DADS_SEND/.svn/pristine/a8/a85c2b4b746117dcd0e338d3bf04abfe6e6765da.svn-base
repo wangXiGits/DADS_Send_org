@@ -1,0 +1,24 @@
+package com.cmcc.send.observer.impl;
+
+import java.util.HashMap;
+
+import com.cmcc.monitor.Util.PropertiesReader;
+import com.cmcc.send.observer.Subject;
+import com.cmcc.send.observer.util.CommonThread;
+
+public class CommonObserver extends AbstractObserver{
+	private String sendFlag = null;
+	private String appType = null;
+	private String sendPath = null;
+	private static HashMap<String, CommonThread> threadMap = new HashMap<String, CommonThread>();
+
+	public CommonObserver(String sendFlag,String appType,String sendPath){
+		this.sendFlag = sendFlag;
+		this.appType = appType;
+		this.sendPath = sendPath;
+	}
+	@Override
+	public void update(Subject subject) {
+		commonUpdate(subject, sendFlag, appType, sendPath, threadMap);
+	}
+}

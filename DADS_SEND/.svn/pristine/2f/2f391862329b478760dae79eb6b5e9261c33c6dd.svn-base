@@ -1,0 +1,45 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.UserDao;
+import com.cmcc.monitor.Service.UserService;
+import com.cmcc.monitor.base.Domain.User;
+@Service
+public class UserServiceImpl implements UserService {
+	@Autowired
+	private UserDao userDao;
+	@Override
+	public void insert(User entity) {
+		this.userDao.insert(entity);
+	}
+
+	@Override
+	public void update(User entity) {
+		this.userDao.update(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		this.userDao.delete(id);
+	}
+
+	@Override
+	public User findById(int id) {
+		return this.userDao.findById(id);
+	}
+
+	@Override
+	public List<User> findScrollPage(int page, int pagesize, String condition) {
+		return this.userDao.findScrollPage(page, pagesize, condition);
+	}
+
+	@Override
+	public int getCount() {
+		return this.userDao.getCount();
+	}
+
+}

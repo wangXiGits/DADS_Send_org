@@ -1,0 +1,60 @@
+package com.cmcc.monitor.base.Domain;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 
+ * 项目名称：DADS   
+ * 类名称：DeviceInfo   
+ * 类描述：Mongodb bean
+ * 创建人：lw   
+ * 创建时间：2014-5-8 下午03:01:14   
+ * 修改人：lw   
+ * 修改时间：2014-5-8 下午03:01:14   
+ * 修改备注： 
+ * @version
+ */
+public class DeviceInfo implements Serializable{
+	private static final long serialVersionUID = -3510076748630395217L;
+	private String deviceId;
+	private String deviceName;
+	@Override
+	public String toString() {
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("deviceId", deviceId);
+		map.put("deviceName", deviceName);
+		return map.toString();
+	};
+	/**
+	 * @return the deviceId
+	 */
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	/**
+	 * @param deviceId
+	 *            the deviceId to set
+	 */
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	/**
+	 * @return the deviceName
+	 */
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	/**
+	 * @param deviceName
+	 *            the deviceName to set
+	 */
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}
+
+}

@@ -1,0 +1,10 @@
+package com.cmcc.mina.component;
+/**
+ * 组合模式:抽象构件
+ */
+public interface Component {
+
+	public void add(Component t);
+	public void remove(Component t);
+	public void getChild(int i);
+}

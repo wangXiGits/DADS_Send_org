@@ -1,0 +1,57 @@
+package com.cmcc.mina.component.milink.sport.impl;
+
+import org.apache.mina.core.buffer.IoBuffer;
+
+import com.cmcc.mina.component.PacketFilterComponent;
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.packet.milink.sports.LoginPacket;
+import com.cmcc.mina.util.Logger;
+import com.cmcc.monitor.Util.C3P0Util;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.DeviceIDResolver;
+/**
+ * 实现登陆数据包的编码
+ */
+public class LoginDataParser extends PacketFilterComponent {
+
+	@Override
+	public boolean check(IoBuffer buffer) {
+		if(buffer.get(8)==1 && buffer.get(9)==-128)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	protected PackageData generateRealPackageData(IoBuffer buffer) {
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() begin...");
+		LoginPacket data = new LoginPacket();
+		data.setDeviceID(DeviceIDResolver.getDeviceIDFromBytes(buffer.array(),10));
+		data.setPatientID(DeviceIDResolver.searchPatientidByDeviceid(data.getDeviceID()));
+		data.setAppType(DeviceIDResolver.searchAppTypeByDeviced(data.getDeviceID()));
+		data.setLoginTime(DateUtil.getCurrentTime());
+		data.setName("sports");
+		data.setType("login");
+		if(data.getDeviceID() != null && data.getDeviceID().length()>4){
+			data.setCompany(DeviceIDResolver.searchCompanyByDeviceid(data.getDeviceID()));
+		}
+		Logger.writeLog("NO.1 package handled device_id:"+data.getDeviceID()+" patientID:"+data.getPatientID()+" company:"+data.getCompany());
+		// checkin success login user, add by renchm on 2013/08/27  PWS0012 
+		checkExceptionUserIn(data.getLoginTime(),data.getDeviceID(),data.getPatientID());
+		log.info(this.getClass().getSimpleName()+".generateRealPackageData() end.");
+		return data;
+	}
+
+	private void checkExceptionUserIn(String loginTime, String device_id, String patientID) {
+		try {
+			if("testdeviceid".equals(device_id))
+				return;
+			String sql = "insert into exceptionuser(loginTime,deviceID,patientID) values('"+loginTime+"','"+device_id+"','"+patientID+"')";
+			C3P0Util.executeUpdate(sql);
+			Logger.writeLog("login success! deviceID="+device_id+" patientID="+patientID);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

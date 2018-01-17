@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jms="http://www.springframework.org/schema/jms"
+    xmlns:context="http://www.springframework.org/schema/context"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+        http://www.springframework.org/schema/jms 
+        http://www.springframework.org/schema/jms/spring-jms-3.0.xsd"
+        >
+
+<!-- enables annotation based configuration -->
+<context:annotation-config />
+<!-- scans for annotated classes in the com.company package -->
+<context:component-scan base-package="com.cloud.activeMQ"/>
+<!-- allows for ${} replacement in the spring xml configuration from the system.properties file on the classpath 
+<context:property-placeholder location="classpath:com/cmcc/emr/Config/ActiveMQConf.properties"/>-->
+<!-- creates an activemq connection factory using the amq namespace -->
+<bean id="ope_amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+	<property name="brokerURL" value="${jms.ope.url}">
+	</property>
+</bean>
+<!-- CachingConnectionFactory Definition, sessionCacheSize property is the number of sessions to cache -->
+<bean id="ope_connectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+    <constructor-arg ref="ope_amqConnectionFactory" />
+    <property name="sessionCacheSize" value="100" />
+</bean>
+<!-- JmsTemplate Definition -->
+<bean id="ope_jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+   <constructor-arg ref="ope_connectionFactory"/>
+	<!--<property name="defaultDestination" ref="destinationQueue" />
+	--><!-- 区别它采用的模式为false是p2p为true是订阅 -->
+	<property name="pubSubDomain" value="false" />
+</bean>
+
+<!-- listener container definition using the jms namespace, concurrency is the max number of concurrent listeners that can be started -->
+
+<bean id="queueMessageListener" class="com.cloud.activeMQ.UserInfoMessageListener">
+	<property name="ope_jmsTemplate" ref="ope_jmsTemplate"></property>
+</bean>
+
+<bean id="queueMessageListenerDest" class="org.apache.activemq.command.ActiveMQQueue">
+	<constructor-arg index="0" value="${jms.queue.userQUEUE}" />
+</bean>
+<!-- 同步用户监听器类 -->
+<bean id="gatewayQueuelistenerContainer"
+	class="org.springframework.jms.listener.DefaultMessageListenerContainer">	
+	<property name="connectionFactory" ref="ope_connectionFactory" />
+	<property name="destination" ref="queueMessageListenerDest" />
+	<property name="messageListener" ref="queueMessageListener" />
+	<property name="receiveTimeout" value="10000" />
+</bean>
+</beans>

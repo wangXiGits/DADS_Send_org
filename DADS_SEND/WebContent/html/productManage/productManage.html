@@ -1,0 +1,100 @@
+<div header></div>
+<table>
+    <tr>
+        <td class="p_1">
+            <div menu ng-controller="MenuCtrl" ng-init="init(2, 0)"></div>
+        </td>
+        <td>
+            <div class="p_2">
+                <div class="input-prepend p_4">
+                    <span class="add-on"><i class="icon-search"></i></span>
+                    <input type="text" placeholder="appType" ng-model="filterList[0].appName" ng-change="Util.searchList(this, 0)"/>
+                </div>
+                <div class="input-prepend p_4">
+                    <span class="add-on"><i class="icon-search"></i></span>
+                    <input type="text" placeholder="产品名称" ng-model="filterList[0].appDesc" ng-change="Util.searchList(this, 0)"/>
+                </div>
+                <button class="btn btn-success p_6" ng-click="openModal(null, 'add')">添加</button>
+                <table class="table table-bordered">
+                    <tr>
+                        <td>appType</td>
+                        <td>产品名称</td>
+                        <td>发送标识</td>
+                        <td >URL</td>
+                        <td >queueName</td>
+                        <td>开关</td>
+                        <td>更新时间</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr ng-repeat="item in sourceList[0]">
+                        <td>{{ item.appName }}</td>
+                        <td>{{ item.appDesc }}</td>
+                        <td>{{ item.appSendFlag }}</td>
+                        <td><div style="width: 200px;word-break: break-all">{{ item.appUrl }}</div></td>
+                        <td>{{ item.appQueueName }}</td>
+                        <td>{{ item.appToggle.replace('on', '开启').replace('off', '关闭') }}</td>
+                        <td>{{ item.updateTime }}</td>
+                        <td>
+                            <button class="btn btn-small btn-info" ng-click="openModal($index, 'modify')">修改</button>
+                            <button class="btn btn-small btn-info" ng-click="deleteInfo(item)">删除</button>
+                        </td>
+                    </tr>
+                </table>
+                <span class="p_3">
+    	            提示：共<font>{{ Util.noOfPages2(Util.filterList[0].length, 0) }}</font>页，共<font>{{ Util.filterList[0].length }}</font>条记录
+                </span>
+                <div ng-show="Util.filterList[0].length > Util.sizeList[0]">
+                    <div pagination num-pages="Util.noOfPages2(Util.filterList[0].length, 0)" current-page="Util.currentPageList[0]"
+                         max-size="Util.maxPageSize" on-select-page="Util.selectList(this, 0, page)" boundary-links="true"
+                         first-text="'首页'" previous-text="'上页'" next-text="'下页'" last-text="'尾页'"></div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<div footer></div>
+<div modal="$parent.modelShow" options="opts" ng-controller="ProductManageModalCtrl">
+    <div class="modal-header p_5">
+        <strong ng-if="$parent.type=='add'">添加产品</strong>
+        <strong ng-if="$parent.type!='add'">{{ info.appDesc }}</strong>
+        <button class="close" ng-click="$parent.modelShow=false">×</button>
+    </div>
+    <div class="modal-body p_5" ng-init="init()">
+        <form class="form-horizontal">
+            <table>
+                <tr>
+                    <td><span>*&nbsp;</span>appType：</td>
+                    <td><input type="text" ng-model="info.appName"/></td>
+                </tr>
+                <tr>
+                    <td><span>*&nbsp;</span>产品名称：</td>
+                    <td><input type="text" ng-model="info.appDesc"/></td>
+                </tr>
+                <tr>
+                    <td><span>*&nbsp;</span>发送标识：</td>
+                    <td><input type="text" ng-model="info.appSendFlag"/></td>
+                </tr>
+                <tr>
+                    <td><span>*&nbsp;</span>queueName：</td>
+                    <td><input type="text" ng-model="info.appQueueName"/></td>
+                </tr>
+                <tr>
+                    <td><span>*&nbsp;</span>URL：</td>
+                    <td><input type="text" ng-model="info.appUrl"/></td>
+                </tr>
+                <tr>
+                    <td>开关：</td>
+                    <td><select ng-model="info.appToggle" ng-options="item.value as item.name for item in list"></select></td>
+                </tr>
+            </table>
+        </form>
+        <div class="i_7" ng-show="$parent.type=='add'">
+            <button class="btn btn-info" ng-click="addInfo()"><i class="icon-edit"></i>&nbsp;新增</button>
+            <button class="btn" ng-click="init()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+        </div>
+        <div class="i_7" ng-show="$parent.type!='add'">
+            <button class="btn btn-info" ng-click="modifyInfo()"><i class="icon-edit"></i>&nbsp;修改</button>
+            <button class="btn" ng-click="init()"><i class="icon-refresh icon-spin"></i>&nbsp;重置</button>
+        </div>
+    </div>
+</div>

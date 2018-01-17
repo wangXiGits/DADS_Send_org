@@ -1,0 +1,15 @@
+package com.cmcc.monitor.Service;
+
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+public interface DataManageService {
+	/**
+	 * 查询出符合条件的所有data
+	 * 
+	 * @return
+	 */
+	public List<HashMap<String, String>> getPacksByCondition(JSONObject map);
+}

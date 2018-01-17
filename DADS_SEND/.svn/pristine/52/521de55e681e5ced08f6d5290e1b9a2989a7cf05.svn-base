@@ -1,0 +1,99 @@
+package com.cmcc.mina.strategy;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.mina.core.session.IoSession;
+
+import com.cmcc.mina.packet.PackageData;
+import com.cmcc.mina.state.jiays.JiaysPacketHandleState;
+import com.cmcc.mina.state.jiays.impl.LogoutState;
+import com.cmcc.mina.state.jiays.impl.No1LoginState;
+import com.cmcc.mina.state.jiays.impl.No8BPBSState;
+import com.cmcc.mina.state.jiays.impl.No8SportsState;
+
+public class JiaysPacketHandleStrategy implements MHDataPacketHandleStrategy {
+
+	private static Map<String, String> stateMap = new HashMap<String, String>();
+	@SuppressWarnings("rawtypes")
+	private static Map<String,Class> classMap = new HashMap<String, Class>();
+	static
+	{
+		stateMap.put("login", "no8");
+		stateMap.put("no8", "logout");
+		
+		classMap.put("login", No1LoginState.class);
+		classMap.put("no8", null);
+		classMap.put("logout", LogoutState.class);
+	}
+	@Override
+	public boolean handle(IoSession session, Object message) {
+		JiaysPacketHandleState state = null;
+		
+		boolean result = false;
+		try {
+			//changyaobin  工厂方法，获取各个数据包的对象
+			state = getNextRealState(session,(PackageData)message);
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
+		if(state!=null){
+			result = state.handlePacket(session,message);
+		}else{
+			log.info("状态为空！");
+		}
+		return result;
+	}
+	// 获取下一状态的字符串形式
+	@Override
+	public String getNextState(IoSession session,PackageData pack)
+	{
+		if("login".equals(pack.getType()))
+		{
+			return "login";
+		}else if("logout".equals(pack.getType()))
+		{
+			return "logout";
+		}else{
+			return "no8";
+		}
+	}
+	/**
+	 * 
+	 * @param session
+	 * @param pack
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * SportsPacketHandleState
+	 */
+	@Override
+	public JiaysPacketHandleState getNextRealState(IoSession session,PackageData pack) throws InstantiationException, IllegalAccessException
+	{
+		String state = getNextState(session,pack);
+		JiaysPacketHandleState dataState = null;
+		// 8号包有多种可能状态
+		if("no8".equals(state))
+		{
+			//创建具体的state
+			if("BPBS".equals(pack.getType()))
+			{
+				dataState = new No8BPBSState();
+			}
+			else if("Sports".equals(pack.getType()))
+			{
+				dataState = new No8SportsState();
+			}
+		}
+		else
+		{
+			dataState = (JiaysPacketHandleState) classMap.get(state).newInstance();
+		}
+		
+		return dataState;
+	}
+}

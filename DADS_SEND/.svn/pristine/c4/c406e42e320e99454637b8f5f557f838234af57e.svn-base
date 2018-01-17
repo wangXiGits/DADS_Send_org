@@ -1,0 +1,135 @@
+package com.cmcc.monitor.api.Controller;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cmcc.monitor.Service.DatatypeService;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.base.Domain.Datatype;
+import com.cmcc.monitor.base.Domain.ProductDatatype;
+import com.cmcc.send.observer.util.DatatypeInfoContext;
+/**
+ * 
+ * 数据类型管理
+ *
+ */
+@Controller
+public class DatatypeController  extends BaseController {
+	private static Logger log = Logger.getLogger(DatatypeController.class);	
+	@Autowired
+	private DatatypeService datatypeService;
+	
+	@RequestMapping(value="/saveDatatype.json" ,params={"data"})
+	public void saveDatatype(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data");
+		//param=new String(param.getBytes("ISO-8859-1"),"utf-8");
+		try {
+			JSONObject jo = JSONObject.fromObject(param);
+			Datatype datatype=new Datatype();
+			datatype.setDataTypeName(jo.getString("dataTypeName"));
+			datatype.setDataDesc(jo.getString("dataDesc"));
+			datatype.setTableName(jo.getString("tableName"));
+			datatype.setUpdateTime(DateUtil.getCurrentTime());
+			datatypeService.insert(datatype);
+			result.put("status", "SUCCESS");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+        log.info("添加了Datatype表中,param: "+param);
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/deleteDatatype.json",params={"data"})
+	public void deleteDatatype(HttpServletRequest request,HttpServletResponse response)
+	{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data");
+		Datatype datatype=new Datatype();
+		try {
+			JSONObject jo=JSONObject.fromObject(param);
+			datatype = new Datatype();
+			datatype.setDatatypeId(jo.getInt("datatypeId"));
+			datatypeService.delete(datatype.getDatatypeId());
+			result.put("status", "SUCCESS");
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+        log.info("删除了Datatype表中datatypeid： " +datatype.getDatatypeId()+"的记录");
+		this.writeToClient(response, result);
+	}
+	@RequestMapping(value="/updateDatatype.json",params={"data"})
+	public void updateDatatype(HttpServletRequest request,HttpServletResponse response) throws Exception
+	{
+		JSONObject result = new JSONObject();
+		String param = request.getParameter("data").toString();
+		//param=new String(param.getBytes("ISO-8859-1"), "utf-8");
+		try {
+			JSONObject jo = JSONObject.fromObject(param);
+			
+			Datatype datatype=new Datatype();
+			datatype.setDatatypeId(jo.getInt("datatypeId"));
+			datatype.setDataDesc(jo.getString("dataDesc"));
+			datatype.setDataTypeName(jo.getString("dataTypeName"));
+			datatype.setTableName(jo.getString("tableName"));
+			datatype.setUpdateTime(DateUtil.getCurrentTime());
+			datatypeService.update(datatype);
+			result.put("status", "SUCCESS");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.put("status", "FAILURE");
+			log.info(e.getMessage());
+		}
+		refreshContext();
+		log.info("更新了Datatype表,param: "+param);
+		this.writeToClient(response, result);
+	}
+
+	@RequestMapping(value="/queryDatatype.json")
+	public void queryDatatype(HttpServletRequest request,HttpServletResponse response){
+		List<Datatype> list = datatypeService.findScrollPage(1, 1000, "");
+		
+		/**
+		 * 去除相互嵌套
+		*/
+		for (Datatype datatype : list) {
+			Set<ProductDatatype>set=datatype.getProductDatatypes();
+			Iterator<ProductDatatype> iterator = set.iterator();
+			while(iterator.hasNext()){
+				ProductDatatype pd = iterator.next();
+				pd.setDatatype(null);
+				pd.setProduct(null);
+			}
+		}
+		JSONArray result = JSONArray.fromObject(list);
+			log.info("查询datatype表中的数据");
+	 	this.writeToClient(response, result);
+	} 
+	/**
+	 * 刷新内存中信息
+	 */
+	private static void refreshContext(){
+		DatatypeInfoContext.initDatatypeInfo();
+		log.info("内存中datatype 信息已更新");
+	}
+}
+
+

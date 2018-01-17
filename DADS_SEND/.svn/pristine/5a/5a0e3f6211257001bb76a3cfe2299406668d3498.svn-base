@@ -1,0 +1,103 @@
+<div header></div>
+<div style="position: absolute;top: 186px;right: 10px;z-index: 9999;">
+    <input type="text" class="input-small" datetimepicker ng-model="exportDate"/>
+    <a ng-href="{{ url() }}" class="btn btn-success" style="position: relative;top: -6px;">导出</a>
+</div>
+<table>
+    <tr>
+        <td style="width: 150px">
+            <div menu ng-controller="MenuCtrl" ng-init="init(1, 0)"></div>
+        </td>
+        <td>
+            <div style="position: relative;left: 7px;width: 782px;min-height: 580px;">
+                <div tabset>
+                    <div tab ng-repeat="item in tabList" heading="{{ item }}" select="update($index, true)">
+                        <div style="height: 30px;text-align: right;margin-bottom: 20px;">
+                            <div class="input-prepend" style="opacity: 0" ng-show="$index==2">
+                                <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+                                <input type="text" style="width: 90px;" placeholder="手机号" ng-model="filterType[$index].patientID" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+                            </div>
+                            <form class="form-horizontal" style="display: inline-block;position: relative;top: -5px;" ng-show="$index<2">
+                                <span class="help-inline">选择日期</span>
+                                <input type="text" readonly class="input-small" style="cursor: pointer" datetimepicker ng-model="$parent.$parent.date"/>
+                                <button class="btn btn-primary" style="margin-right: 5px;" ng-click="$parent.update($index, false)"><i class="icon-search">&nbsp;</i>查询</button>
+                            </form>
+                            <form class="form-horizontal" style="display: inline-block;position: relative;top: -5px;" ng-show="$index>1">
+                                <span class="help-inline">从</span>
+                                <input type="text" readonly class="input-small" style="width: 75px;cursor: pointer" datetimepicker ng-model="$parent.$parent.startDate"/>
+                                <span class="help-inline">到</span>
+                                <input type="text" readonly class="input-small" style="width: 75px;cursor: pointer" datetimepicker ng-model="$parent.$parent.endDate"/>
+                                <button class="btn btn-primary" style="margin-right: 5px;" ng-click="$parent.update($index, false)"><i class="icon-search">&nbsp;</i>查询</button>
+                            </form>
+                            <div class="input-prepend" style="display: inline-block" ng-show="$index!=2">
+                                <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+                                <input type="text" style="width: 90px;" autofocus placeholder="单位" ng-model="filterType[$index].companyName" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+                            </div>
+                            <div class="input-prepend" style="display: inline-block" ng-show="$index!=2">
+                                <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+                                <input type="text" style="width: 90px;" placeholder="姓名" ng-model="filterType[$index].pname" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+                            </div>
+                            <div class="input-prepend" style="display: inline-block" ng-show="$index<2">
+                                <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+                                <input type="text" style="width: 90px;" placeholder="手机号" ng-model="filterType[$index].patientId" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+                            </div>
+                            <div class="input-prepend" style="display: inline-block" ng-show="$index==3">
+                                <span class="add-on" style="background-color: #fdcb02"><i class="icon-search"></i></span>
+                                <input type="text" style="width: 90px;" placeholder="手机号" ng-model="filterType[$index].patientID" ng-change="Data.selectPage($eval(filterData), 1);$broadcast('selectPage', 1)"/>
+                            </div>
+                        </div>
+                        <table class="table table-striped table-bordered table-hover">
+                            <tr style="font-size: 14px">
+                                <td class="td" style="width: 10%;background-color: #cde3f6;text-align: center" ng-if="$index!=2">单位</td>
+                                <td class="td" style="width: 10%;background-color: #cde3f6;text-align: center" ng-if="$index!=2">班组</td>
+                                <td class="td" style="width: 10%;background-color: #cde3f6;text-align: center" ng-if="$index!=2">姓名</td>
+                                <td class="td" style="width: 13.75%;background-color: #cde3f6;text-align: center" ng-if="$index!=2">手机号</td>
+                                <td class="td" style="width: 13.75%;background-color: #cde3f6;text-align: center" ng-if="$index!=2">设备ID</td>
+                                <td class="td" style="width: 20%;background-color: #cde3f6;text-align: center" ng-if="$index==0">最后上传时间</td>
+                                <td class="td" style="width: 11.25%;background-color: #cde3f6;text-align: center" ng-if="$index==0">未上传天数</td>
+                                <td class="td" style="background-color: #cde3f6;text-align: center" ng-if="$index==0">日期</td>
+                                <td class="td" style="width: 22.5%;background-color: #cde3f6;text-align: center" ng-if="$index==1">上传时间</td>
+                                <td class="td" style="background-color: #cde3f6;text-align: center" ng-if="$index==1">步数</td>
+                                <td class="td" style="width: 50%;background-color: #cde3f6;text-align: center" ng-if="$index==2">日期</td>
+                                <td class="td" style="background-color: #cde3f6;text-align: center" ng-if="$index==2">人数</td>
+                                <td class="td" style="background-color: #cde3f6;text-align: center" ng-if="$index==3">次数</td>
+                            </tr>
+                            <tr style="font-size: 12px" ng-repeat="item in data[$index]" ng-show="item.show&&([item] | filter: filterType[$parent.$index]).length">
+                                <td style="text-align: center" ng-if="$parent.$index!=2">{{ item.companyName }}</td>
+                                <td style="text-align: center;" ng-if="$parent.$index!=2">
+                                    <div style="width: 60px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap" title="{{ item.teamName }}">
+                                        {{ item.teamName }}
+                                    </div>
+                                </td>
+                                <td style="text-align: center" ng-if="$parent.$index!=2">{{ item.pname }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index!=2">{{ item.patientId || item.patientID }}</td>
+                                <td style="text-align: center;" ng-if="$parent.$index!=2">
+                                    <div style="width: 90px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap" title="{{ item.deviceId || item.deviceID }}">
+                                        {{ item.deviceId || item.deviceID }}
+                                    </div>
+                                </td>
+                                <td style="text-align: center" ng-if="$parent.$index!=2">{{ item.lastTime || item.receiveTime || item.times }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index==0">{{ item.nodataDays }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index==0">{{ item.statisticsTime }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index==1">{{ item.totalSteps }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index==2">{{ item.date }}</td>
+                                <td style="text-align: center" ng-if="$parent.$index==2">{{ item.patientNum }}</td>
+                            </tr>
+                        </table>
+                        <span style="float: left;position: relative;top: 2px;margin-left: 10px;">
+                            提示：共<font style="color: red">{{ Data.noOfPages($eval(filterData).length) }}</font>页，
+                            共<font style="color: red">{{ $eval(filterData).length }}</font>条记录
+                        </span>
+                        <div style="width: 100%;text-align: right;opacity: 0;height: 54px;" ng-show="$eval(filterData).length<=20"></div>
+                        <div style="width: 100%;text-align: right;" ng-show="$eval(filterData).length>20">
+                            <pagination num-pages="Data.noOfPages($eval(filterData).length)" current-page="currentPage" max-size="maxSize"
+                                        on-select-page="Data.selectPage($eval(filterData), page)" boundary-links="true" first-text="'首页'"
+                                        previous-text="'上页'" next-text="'下页'" last-text="'尾页'"></pagination>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<div footer></div>

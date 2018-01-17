@@ -1,0 +1,33 @@
+package com.cmcc.monitor.Service;
+
+import net.sf.json.JSONObject;
+
+public interface ETCommOpenAPIService {
+
+	public boolean insertSimpleSportData(JSONObject jsonData);
+	public boolean insertMinutesSportData(JSONObject jsonData,String rootPath) throws Exception;
+	public String getPatientIdByDeviceId(String deviceId);
+	/**
+	 * 插入一体康运动数据
+	 * @param encounterDatetime
+	 * @param idcard
+	 * @param EntAccount
+	 * @param DataId
+	 * @param uploadtype
+	 * @param stride
+	 * @param weight
+	 * @param calorie
+	 * @param steps
+	 * @param faststeps
+	 * @param slowsteps
+	 * @param minutes
+	 * @param exercise
+	 * @param encounterType
+	 * @return
+	 */
+	public boolean insertEtcommstepcount(String encounterDatetime, String idcard,
+			String EntAccount, String DataId, String uploadtype, String stride,
+			String weight, String calorie, String steps, String faststeps,
+			String slowsteps, String minutes, String exercise,
+			String encounterType);
+}

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jms="http://www.springframework.org/schema/jms"
+    xmlns:context="http://www.springframework.org/schema/context"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+        http://www.springframework.org/schema/jms 
+        http://www.springframework.org/schema/jms/spring-jms-3.0.xsd"
+        >
+
+<!-- enables annotation based configuration -->
+<context:annotation-config />
+<!-- scans for annotated classes in the com.company package -->
+<context:component-scan base-package="com.cloud.activeMQ"/>
+<!-- allows for ${} replacement in the spring xml configuration from the system.properties file on the classpath 
+<context:property-placeholder location="classpath:com/cmcc/emr/Config/ActiveMQConf.properties"/>-->
+<!-- creates an activemq connection factory using the amq namespace -->
+<bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+	<property name="brokerURL" value="${jms.dads.url}">
+	</property>
+</bean>
+<!-- CachingConnectionFactory Definition, sessionCacheSize property is the number of sessions to cache -->
+<bean id="connectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+    <constructor-arg ref="amqConnectionFactory" />
+    <property name="sessionCacheSize" value="${jms.cachSessionNum}" />
+</bean>
+<!-- JmsTemplate Definition -->
+<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+   <constructor-arg ref="connectionFactory"/>
+	<!--<property name="defaultDestination" ref="destinationQueue" />
+	-->
+	<!-- 区别它采用的模式为false是p2p为true是订阅 -->
+	<property name="pubSubDomain" value="false" />
+</bean>
+<!-- 发送消息的目的地（一个队列） -->
+<!--<bean id="destinationTopic" class="org.apache.activemq.command.ActiveMQTopic">
+	 设置消息队列的名字 
+	<constructor-arg index="0" value="${jms.topic.EMRTOPIC}" />
+</bean>
+-->
+<!-- 发送消息的目的地（队列） -->
+	<bean id="destinationQueue"
+		class="org.apache.activemq.command.ActiveMQQueue">
+		<!-- 设置消息队列的名字 -->
+		<constructor-arg index="0" value="myQueue" />
+	</bean>
+
+<!-- 定时发送 begin -->
+<bean id="txTask" class="com.cloud.monitor.task.WSXHHDataSendTask">
+	<property name="commonMsgPublisher"><ref bean="commonMsgPublisher"></ref></property>
+</bean>
+<bean id="txTimerTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+  
+	<property name="delay"><value>5000</value></property> <!-- 设置启动延迟 -->    
+	<property name="period"><value>10000</value></property>   <!-- 后续延迟 -->     
+	<property name="timerTask"><ref bean="txTask"></ref></property>  <!-- 指定触发器信息 -->     
+</bean>
+<bean id="jkTask" class="com.cloud.monitor.task.WSJKDataSendTask">
+	<property name="commonMsgPublisher"><ref bean="commonMsgPublisher"></ref></property>
+</bean>
+<bean id="jkTimerTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+  
+	<property name="delay"><value>5000</value></property> <!-- 设置启动延迟 -->    
+	<property name="period"><value>10000</value></property>   <!-- 后续延迟 -->     
+	<property name="timerTask"><ref bean="jkTask"></ref></property>  <!-- 指定触发器信息 -->     
+</bean>
+
+ <!--使用TimerFactoryBean类,你可以让Spring使用配置创建触发器，并为一组指定的ScheduledTimerTask bean自动创建Timer实例 -->    
+<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+	<property name="scheduledTimerTasks">
+		<list>
+			<!--
+			<ref local="txTimerTask"/>
+			<ref local="jkTimerTask"/>
+		-->
+		</list>
+	</property>
+</bean>
+<!-- 定时发送  end-->
+
+
+
+<!-- listener container definition using the jms namespace, concurrency is the max number of concurrent listeners that can be started -->
+
+<!--<jms:listener-container concurrency="3-10">
+    <jms:listener id="QueueListener"  destination="${jms.queue.EMRQUEUE}" ref="queueListener" />
+</jms:listener-container>
+
+--><!--<bean id="queueMessageListener" class="com.cloud.activeMQ.ConsumerMessageListener"> 
+      </bean> 
+    
+    <bean id="queueMessageListenerDest" class="org.apache.activemq.command.ActiveMQQueue">    
+     <constructor-arg index="0" value="FirstQueue3" />  
+      </bean> 
+     <bean id="myMsgQueuelistenerContainer"
+      class= "org.springframework.jms.listener.DefaultMessageListenerContainer">
+      <property name="connectionFactory" ref="connectionFactory" />   
+      <property name="destination" ref="destinationQueue" />   
+      <property name="messageListener" ref="queueMessageListener" />   
+        <property name="receiveTimeout" value="10000" />
+      </bean>
+
+
+--><!--订阅/分发  -->
+
+ 	 
+<!-- 实现接口的方式   配置监听--><!--  
+ <bean id="firstMessageListener"  class="com.cloud.activeMQ.test.FirstMessageListener"></bean> 
+  <bean id="sucondMessageListener"  class="com.cloud.activeMQ.test.SecondMessageListener"></bean>
+  
+   
+<bean id="topicMessageListenerDest" class="org.apache.activemq.command.ActiveMQTopic">
+<constructor-arg index="0" value="myMessageListenerTopic"/>
+ </bean>
+ 
+ --><!-- 监听的第一个类 -->
+ <!--<bean id="myMsgFirstTopiclistenerContainer"  
+ class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+ 
+ <property name="connectionFactory" ref="connectionFactory" /> 
+   <property name="destination" ref="topicMessageListenerDest" />  
+    <property name="messageListener" ref="firstMessageListener" />
+     <property name="pubSubDomain" value="true"/>   
+   <property name="receiveTimeout" value="10000" />
+   </bean>
+   
+    
+ --><!-- 监听的第二个类 -->
+   <!--<bean id="myMsgSecondTopiclistenerContainer"
+   class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+ 
+ <property name="connectionFactory" ref="connectionFactory" /> 
+   <property name="destination" ref="topicMessageListenerDest" />  
+    <property name="messageListener" ref="sucondMessageListener" />
+     <property name="pubSubDomain" value="true"/>   
+   <property name="receiveTimeout" value="10000" />
+   </bean>
+--></beans>

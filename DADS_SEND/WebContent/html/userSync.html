@@ -1,0 +1,34 @@
+<div header></div>
+<div>
+    <div spin style="position: absolute;top: 375px;left: 405px;width: 150px;height: 150px" ng-show="loading"></div>
+    <div class="p_2 p_8">
+        <button class="btn btn-success p_6" ng-click="pushUser()">推送</button>
+        <table class="table table-bordered">
+            <tr>
+                <td><input type="checkbox" ng-model="selected" ng-click="selectUser()"/></td>
+                <td>姓名</td>
+                <td>手机</td>
+                <td>appType</td>
+                <td>推送标识</td>
+                <td>谁备号</td>
+            </tr>
+            <tr ng-repeat="item in sourceList[0]">
+                <td><input type="checkbox" ng-model="item.selected"/></td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.phone }}</td>
+                <td>{{ item.appType }}</td>
+                <td>{{ item.emr_flag }}</td>
+                <td>{{ item.deviceID }}</td>
+            </tr>
+        </table>
+                <span class="p_3">
+    	            提示：共<font>{{ Util.noOfPages2(Util.filterList[0].length, 0) }}</font>页，共<font>{{ Util.filterList[0].length }}</font>条记录
+                </span>
+        <div ng-show="Util.filterList[0].length > Util.sizeList[0]">
+            <div pagination num-pages="Util.noOfPages2(Util.filterList[0].length, 0)" current-page="Util.currentPageList[0]"
+                 max-size="Util.maxPageSize" on-select-page="Util.selectList(this, 0, page)" boundary-links="true"
+                 first-text="'首页'" previous-text="'上页'" next-text="'下页'" last-text="'尾页'"></div>
+        </div>
+    </div>
+</div>
+<div footer></div>

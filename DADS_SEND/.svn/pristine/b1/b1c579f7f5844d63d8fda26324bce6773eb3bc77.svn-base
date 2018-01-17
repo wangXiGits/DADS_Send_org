@@ -1,0 +1,71 @@
+package com.cmcc.monitor.DaoImpl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.stereotype.Component;
+
+import com.cmcc.monitor.Dao.ProductDatatypeDao;
+import com.cmcc.monitor.base.Domain.ProductDatatype;
+
+
+@Component
+public class ProductDatatypeDaoImpl implements ProductDatatypeDao{
+	@Autowired
+	private HibernateTemplate hibernateTemplate;
+	@Override
+	
+	public void insert(ProductDatatype entity) {
+		// TODO Auto-generated method stub
+       this.hibernateTemplate.save(entity);
+	
+	}
+
+	@Override
+	public void update(ProductDatatype entity) {
+		// TODO Auto-generated method stub
+		this.hibernateTemplate.update(entity);
+	}
+
+	@Override
+	public void saveOrUpdate(ProductDatatype entity) {
+		// TODO Auto-generated method stub
+		this.hibernateTemplate.saveOrUpdate(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		// TODO Auto-generated method stub
+		ProductDatatype entity=this.findById(id);
+		this.hibernateTemplate.delete(entity);
+	}
+
+	@Override
+	public ProductDatatype findById(int id) {
+		// TODO Auto-generated method stub
+		return (ProductDatatype)this.hibernateTemplate.get(ProductDatatype.class, new Integer(id));
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ProductDatatype> findScrollPage(final int page, final int pagesize,
+			final String condition) {
+		// TODO Auto-generated method stub
+		return (List<ProductDatatype>)this.hibernateTemplate.executeFind(new HibernateCallback(){
+			public Object doInHibernate(Session session) throws HibernateException,
+			SQLException{
+				Query query=session.createQuery("from ProductDatatype o"+condition);
+				query.setFirstResult((page-1)*pagesize);
+		        query.setMaxResults(pagesize);
+		        return query.list();
+			}
+		});
+
+	}
+
+}

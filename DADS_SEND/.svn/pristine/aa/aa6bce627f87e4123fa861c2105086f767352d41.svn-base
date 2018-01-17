@@ -1,0 +1,209 @@
+package com.cmcc.monitor.test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.log4j.Logger;
+import org.junit.Test;
+
+import com.cmcc.Util.DataSimulatorUtil;
+import com.cmcc.Util.ReadFileUtil;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.MyRandomUtil;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+public class ProductTest {
+	private static Logger log = Logger.getLogger(ProductTest.class);
+	private static String appType = "ALL";
+	private static String address = PropertiesReader.getProp("testUrl");
+	private String deviceId = PropertiesReader.getProp("testDeviceId");
+	private String collectDate = DateUtil.getCurrentTime();
+	private String measureTime = DateUtil.getCurrentTime();
+	/**
+	 * 血压
+	 */
+	@Test
+	public void saveDatatypeTest() {
+		String value = "{'desc':'血糖','name':'bloodglucose','tableName':'bloodglucose'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/saveDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void updateDatatypeTest() {
+		String value = "{'datatypeId':'19','name':'bloodglucose','desc':'血糖','tableName':'bloodglucose'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/updateDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void deleteDatatypeTest() {
+		String value = "{'datatypeId':'29'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/deleteDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void queryDatatypeTest() {
+		String value = "{}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPostQuery(address+"/queryDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void saveproductTest() {
+		String value = "{'appDesc':'健康','appName':'WSJK','sendFlag':'WSJK_flag','toggle':'on','appUrl':'http://123kllk'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/saveProduct.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void updateProductTest() {
+		String value = "{'appId':'15','appDesc':'我尚呵护','appName':'WSHH','sendFlag':'WSHH_flag','toggle':'off','appUrl':'http://58457ypotie'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/updateProduct.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void deleteProductTest() {
+		String value = "{'appId':'18'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/deleteProduct.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void queryProductTest() {
+		String value = "{}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPostQuery(address+"/queryProduct.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void saveproductdatatypeTest() {
+		String value = "{'datatypeId':'15','productId':'15','toggle':'1'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/saveProductDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void updateproductDatatype() {
+		String value = "{'id':'5','datatypeId':'9','productId':'6','toggle':'0'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/updateProductDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void deleteProductDatatype() {
+		String value = "{'id':'22'}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPost(address+"/deleteProductDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	@Test
+	public void queryProductDatatype() {
+		String value = "{}";
+		log.debug(value);
+		boolean gwPushResult = httpClientPostQuery(address+"/queryProductDatatype.json","data", value);
+		System.out.println("gwPushResult=" + gwPushResult);
+	}
+	
+	
+	
+	/**
+	 * 发送post请求推送数据，根据响应结果判断发送成功和失败
+	 * 
+	 * @param url
+	 * @param pairKey
+	 * @param jsono
+	 * @return boolean
+	 */
+	public static boolean httpClientPost(String url, String pairKey, String value) {
+		boolean gwPushResult = false;
+		StringBuilder responseString = new StringBuilder();
+		HttpClient client = new HttpClient();
+		//设置连接超时时间
+		client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+		//设置响应超时时间
+		client.getHttpConnectionManager().getParams().setSoTimeout(15000);
+		PostMethod postM = null;
+		try {
+			postM = new PostMethod(url);
+//			postM.addParameter(new NameValuePair(pairKey, value));
+			postM.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET,"utf-8");  
+			postM.setParameter(pairKey, value);
+			int s = client.executeMethod(postM);
+			System.out.println("s="+s);
+			System.out.println(postM.getStatusLine());
+			Reader reader = new InputStreamReader(postM.getResponseBodyAsStream(), "utf8");
+			BufferedReader br = new BufferedReader(reader);
+			String line = "";
+			while (null != (line = br.readLine())) {
+				responseString.append(line);
+			}
+			System.out.println(responseString);
+			JSONObject jo = JSONObject.fromObject(responseString.toString());
+			if ("success".equalsIgnoreCase(jo.getString("status"))) {
+				gwPushResult = true;
+			}
+		} catch (Exception e) {
+			gwPushResult = false;
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			postM.releaseConnection();
+			System.out.println("release..");
+		}
+		return gwPushResult;
+	}
+	/**
+	 * 发送post请求推送数据，
+	 * 
+	 * @param url
+	 * @param pairKey
+	 * @param jsono
+	 * @return boolean
+	 */
+	public static boolean httpClientPostQuery(String url, String pairKey, String value) {
+		boolean gwPushResult = false;
+		StringBuilder responseString = new StringBuilder();
+		HttpClient client = new HttpClient();
+		//设置连接超时时间
+		client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+		//设置响应超时时间
+		client.getHttpConnectionManager().getParams().setSoTimeout(15000);
+		PostMethod postM = null;
+		try {
+			postM = new PostMethod(url);
+//			postM.addParameter(new NameValuePair(pairKey, value));
+			postM.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET,"utf-8");  
+			postM.setParameter(pairKey, value);
+			int s = client.executeMethod(postM);
+			System.out.println("s="+s);
+			System.out.println(postM.getStatusLine());
+			Reader reader = new InputStreamReader(postM.getResponseBodyAsStream(), "utf8");
+			BufferedReader br = new BufferedReader(reader);
+			String line = "";
+			while (null != (line = br.readLine())) {
+				responseString.append(line);
+			}
+			System.out.println(responseString);
+			if (s==200) {
+				gwPushResult = true;
+			}
+		} catch (Exception e) {
+			gwPushResult = false;
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			postM.releaseConnection();
+			System.out.println("release..");
+		}
+		return gwPushResult;
+	}
+}

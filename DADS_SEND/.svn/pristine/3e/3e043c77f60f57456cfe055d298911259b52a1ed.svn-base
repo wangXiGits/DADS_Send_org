@@ -1,0 +1,20 @@
+/**
+ * add by rencm on 2013-11-26上午10:31:50
+ */
+package com.cmcc.mina.packet.milink.bloodpressure;
+
+import com.cmcc.mina.packet.PackageData;
+
+/** 
+ * 项目名称：MinaGateWay   
+ * 类名称：BPNo1LoginPacket   
+ * 类描述：暂无 
+ * 创建人：rcm   
+ * 创建时间：2013-11-26 上午10:31:50   
+ * 修改人：rcm   
+ * 修改时间：2013-11-26 上午10:31:50   
+ * 修改备注： 
+ * @version   
+ */
+public class BPNo1LoginPacket extends PackageData {
+}

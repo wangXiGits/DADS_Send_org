@@ -1,0 +1,44 @@
+package com.cmcc.monitor.ServiceImpl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cmcc.monitor.Dao.UsertblDAO;
+import com.cmcc.monitor.Service.UsertblService;
+import com.cmcc.monitor.base.Domain.Usertbl;
+@Service
+public class UsertblServiceImpl implements UsertblService {
+	@Autowired
+	private UsertblDAO usertblDao;
+	@Override
+	public void insert(Usertbl entity) {
+		this.usertblDao.insert(entity);
+	}
+
+	@Override
+	public void update(Usertbl entity) {
+		this.usertblDao.update(entity);
+	}
+
+	@Override
+	public void delete(int id) {
+		this.usertblDao.delete(id);
+	}
+
+	@Override
+	public Usertbl findById(int id) {
+		return this.usertblDao.findById(id);
+	}
+
+	@Override
+	public List<Usertbl> findScrollPage(int page, int pagesize, String condition) {
+		return this.usertblDao.findScrollPage(page, pagesize, condition);
+	}
+
+	@Override
+	public int getCount() {
+		return 0;
+	}
+}

@@ -1,0 +1,24 @@
+package com.cmcc.monitor.base.Domain;
+
+public class ResetPersonsPerDay {
+	private String date;
+	private String patientNum;
+	public ResetPersonsPerDay() {
+	}
+	public ResetPersonsPerDay(String date, String patientNum) {
+		this.date = date;
+		this.patientNum = patientNum;
+	}
+	public String getDate() {
+		return date;
+	}
+	public void setDate(String date) {
+		this.date = date;
+	}
+	public String getPatientNum() {
+		return patientNum;
+	}
+	public void setPatientNum(String patientNum) {
+		this.patientNum = patientNum;
+	}
+}

@@ -1,0 +1,30 @@
+package com.cmcc.mina.packet.milink.sports;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.cmcc.mina.packet.PackageData;
+
+public class No8FourWayPacket extends PackageData {
+
+	private List<String> stepcount3data_tran = new ArrayList<String>();
+	private List<String> stepdate = new ArrayList<String>();
+	
+	public No8FourWayPacket(){
+		this.name="sports";
+		this.type="No8-4";
+	}
+	public List<String> getStepcount3data_tran() {
+		return stepcount3data_tran;
+	}
+	public void setStepcount3data_tran(List<String> stepcount3data_tran) {
+		this.stepcount3data_tran = stepcount3data_tran;
+	}
+	public List<String> getStepdate() {
+		return stepdate;
+	}
+	public void setStepdate(List<String> stepdate) {
+		this.stepdate = stepdate;
+	}
+	
+}

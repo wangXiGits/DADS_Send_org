@@ -1,0 +1,32 @@
+package com.cmcc.monitor.task;
+
+import net.sf.json.JSONObject;
+
+import org.apache.commons.httpclient.NameValuePair;
+
+import com.cmcc.gateway.SendThread.HttpClientUtil;
+import com.cmcc.monitor.Util.DateUtil;
+import com.cmcc.monitor.Util.PropertiesReader;
+
+
+public class WSJKTestDataSender implements Runnable{
+	private static String beginDate = PropertiesReader.getProp("sendBeginTime");
+	private static int day = 0;
+	private String url = PropertiesReader.getProp("testUrl")+"/sendData.json";
+	JSONObject data = null;
+	private int rate = Integer.parseInt(PropertiesReader.getProp("sendDataFixedRate"));
+	private String dataType = "ALL";
+//	private String dataType = "sports";
+	@Override
+	public void run() {
+		while (true) {
+			String date = DateUtil.getDayAdd(beginDate, day++);
+			HttpClientUtil.sendHttpData("WSJKTestDataSender", url, new NameValuePair[] {new NameValuePair("date", date),new NameValuePair("dataType", dataType)});
+			try {
+				Thread.sleep(rate);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
